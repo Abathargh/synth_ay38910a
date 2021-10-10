@@ -1,6 +1,13 @@
 /**
  * Ay38910a.c
  *
+ * This module implements the logic for that drives the AY38910A
+ * Programmable sound Generator Chip. This is achieved by  
+ * implementing the following features:
+ *   - a 2MHz clock signal to use as the PSG input
+ *   - interfacing with the AY38910A address/data bus using PORTA
+ *   - interfacing with the AY38910A bus control line using PORTC[0:2]
+ *
  * Author: mar
  */ 
 
@@ -33,6 +40,9 @@
  */
 #define OCR2AVAL 3
 
+#define BC1      7
+#define BDIR     6
+
 /************************************************************************/
 /* Private function declarations                                        */
 /************************************************************************/
@@ -43,16 +53,20 @@ static void clock_init(void);
 /* Private variables                                                    */
 /************************************************************************/
 
-ay_pin_config _sConfig;
-
 /************************************************************************/
 /* Function implementations                                             */
 /************************************************************************/
 
-
-void ay38910_init(ay_pin_config conf)
+/**
+ * Initializes the ay38910a module
+ *
+ * @retval None
+ */
+void ay38910_init(void)
 {
-	_sConfig = conf;
+	DDRA = 0xFF; // 11111111
+	DDRC = 0xA0; // 10100000
+	
 	clock_init();
 }
 
@@ -80,6 +94,36 @@ static void clock_init(void)
 	TCCR2B = (0 << WGM22) |                            // MSB output enable 
 			 (0 << CS22)  | (0 << CS21) | (1 << CS20); // Clock select with no prescaler
 	
-	TIMSK2 = 0; // Disable the compare match interrupt for register A
+	// Disable the compare match interrupt for register A
+	TIMSK2 = 0;
 }
 
+/**
+ * Set the PSG to inactive mode
+ *
+ * @retval None
+ */
+static void inactive_mode(void)
+{
+	PORTB = (0 << BC1) | (0 << BDIR); 
+}
+
+/**
+ * Set the PSG to write mode
+ *
+ * @retval None
+ */
+static void write_mode(void)
+{
+	PORTB = (0 << BC1) | (1 << BDIR);
+}
+
+/**
+ * Set the PSG to latch address mode
+ *
+ * @retval None
+ */
+static void latch_address_mode(void)
+{
+	PORTB = (1 << BC1) | (1 << BDIR);
+}
