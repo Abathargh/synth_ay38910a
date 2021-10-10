@@ -131,6 +131,9 @@
     <Compile Include="inc\types.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="lib\Ay38910a\Ay38910a.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="lib\Ay38910a\Ay38910a.h">
       <SubType>compile</SubType>
     </Compile>
