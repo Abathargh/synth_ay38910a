@@ -1,8 +1,7 @@
 /*
  * pin_config.h
  *
- * Created: 09/10/2021 13:59:59
- *  Author: Gianmarco
+ * Author: mar
  */ 
 
 
@@ -27,18 +26,5 @@
 #define InitPinOuput(x) INIT_PIN(x)
 #define TogglePin(x) TOGGLE_PIN(x)
 
-
-typedef struct {
-	
-}  ;
-
-
-void to_shift_reg_msb(u8 data)
-{
-	for(int idx = 0; idx < 8; idx++)
-	{
-		
-	}
-}
 
 #endif /* PIN_CONFIG_H_ */
