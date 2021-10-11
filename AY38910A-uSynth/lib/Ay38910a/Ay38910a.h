@@ -36,9 +36,6 @@
 #define CHC_TONE_ENABLE  (1 << CHC_TONE)
 #define CHC_TONE_DISABLE (0 << CHC_TONE)
 
-#define CHA_TONE_ENABLE  (1 << CHA_TONE)
-#define CHA_TONE_DISABLE (0 << CHA_TONE)
-
 #define CHA_NOISE_ENABLE  (1 << CHA_NOISE)
 #define CHA_NOISE_DISABLE (0 << CHA_NOISE)
 
