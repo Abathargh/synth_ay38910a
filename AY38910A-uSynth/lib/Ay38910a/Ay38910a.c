@@ -49,6 +49,8 @@
 #define COARSE_ENV_REG 0x0C
 #define SHAPE_ENV_REG  0x0D
 
+#define MIXER_MASK     0xC0
+
 #define CHAN_TO_AMP_REG(c) (((u8)c / 2) + 8)
 
 
@@ -79,8 +81,24 @@ static void write_to_data_bus(u8 address, u8 data);
  * This array contains some pre-computed magic numbers that correspond
  * to real notes following the mathematical equation just introduced.
  */
-static const u16 magic_notes[] = {
-	
+static const unsigned int magic_notes[] = {
+	  15289, 14431, 13621, 12856, 12135, 11454, 10811, 10204,//0-o7
+	  9631, 9091, 8581, 8099, 7645, 7215, 6810, 6428,//8-15
+	  6067, 5727, 5405, 5102, 4816, 4545, 4290, 4050,//16-23
+	  3822, 3608, 3405, 3214, 3034, 2863, 2703, 2551,//24-31
+	  2408, 2273, 2145, 2025, 1911, 1804, 1703, 1607,//32-39
+	  1517, 1432, 1351, 1276, 1204, 1136, 1073, 1012,//40-47
+	  956, 902, 851, 804, 758, 716, 676, 638,//48-55
+	  602, 568, 536, 506, 478, 451, 426, 402,//56-63
+	  379, 358, 338, 319, 301, 284, 268, 253,//64-71
+	  239, 225, 213, 201, 190, 179, 169, 159,//72-79
+	  150, 142, 134, 127, 119, 113, 106, 100,//80-87
+	  95, 89, 84, 80, 75, 71, 67, 63,//88-95
+	  60, 56, 53, 50, 47, 45, 42, 40,//96-103
+	  38, 36, 34, 32, 30, 28, 27, 25,//104-111
+	  24, 22, 21, 20, 19, 18, 17, 16,//112-119
+	  15, 14, 13, 13, 12, 11, 11, 10,//120-127
+	  0//off
 };
 
 /************************************************************************/
@@ -95,7 +113,8 @@ static const u16 magic_notes[] = {
 void ay38910_init(void)
 {
 	DDRA = 0xFF; // 11111111
-	DDRC = 0xA0; // 10100000
+	DDRB = 0xFF; // 00001000
+	DDRC = 0xFF; // 11000000
 	
 	clock_init();
 }
@@ -108,10 +127,8 @@ void ay38910_init(void)
  */
 void ay38910_play_note(Channel chan, u8 note)
 {
-	u8 reg1, reg2;
-	
-	reg1 = (u8) chan;
-	reg2 = ((u8) chan) + 1;
+	volatile u8 reg1 = (u8) chan;
+	volatile u8 reg2 = ((u8) chan) + 1;
 	
 	write_to_data_bus(reg1, 0xFF & magic_notes[note]);
 	write_to_data_bus(reg2, 0x0F & (magic_notes[note] >> 8));
@@ -138,7 +155,7 @@ void ay38910_play_noise(u8 divider)
  */
 void ay38910_channel_mode(u8 mode)
 {
-	write_to_data_bus(MIXER_REG, mode);
+	write_to_data_bus(MIXER_REG, MIXER_MASK | mode);
 }
 
 /**
@@ -183,10 +200,10 @@ static void clock_init(void)
 	// Sets the frequency to 2MHz 
 	OCR2A = OCR2AVAL;
 	
-	TCCR2A = (0 << COM2A1) | (1 << COM2A0) | // Enable output signal on OC2A pin 
-			 (1 << WGM21)  | (1 << WGM20);   // Enable Clear Timer on Compare Mode
+	TCCR2A = (0 << COM2A1) | (1 << COM2A0) | // Enable output signal on OC2A pin
+			 (1 << WGM21)  | (0 << WGM20);   // Enable Clear Timer on Compare Mode
 	
-	TCCR2B = (0 << WGM22) |                            // MSB output enable 
+	TCCR2B = (0 << WGM22) |                            // MSB output enable
 			 (0 << CS22)  | (0 << CS21) | (1 << CS20); // Clock select with no prescaler
 	
 	// Disable the compare match interrupt for register A
