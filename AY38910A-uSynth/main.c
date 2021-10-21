@@ -4,20 +4,21 @@
  * Author : mar
  */ 
 
-#define F_CPU 16000000
+#include "Ay38910a.h"
 
-#include <avr/io.h>
-#include <util/delay.h>
-
-#include "pin_config.h"
 
 int main(void)
 {
-	InitPinOuput(LED_PIN);
-    while (1) 
-    {
-		TogglePin(LED_PIN);
-		_delay_ms(100);
-    }
+	u8 note = 60;
+	ay38910_init();
+
+	ay38910_channel_mode(CHA_TONE_ENABLE);
+	ay38910_set_amplitude(CHANNEL_A, 15);
+	ay38910_play_note(CHANNEL_A, note);
+
+	while(1)
+	{
+	}
+	return 0;
 }
 
