@@ -8,6 +8,7 @@
 
 void setUp(void)
 {
+    ay38910_init();
 }
 
 void tearDown(void)
