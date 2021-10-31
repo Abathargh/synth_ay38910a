@@ -69,7 +69,7 @@ typedef enum {
 /* Public functions                                                     */
 /************************************************************************/
 
-void ay38910_init(void);
+void ay38910_init(Port AyParallelPort, Pin b1_pin, Pin bdir_pin);
 void ay38910_play_note(Channel chan, u8 note);
 void ay38910_play_noise(u8 sound);
 void ay38910_channel_mode(u8 mode);
