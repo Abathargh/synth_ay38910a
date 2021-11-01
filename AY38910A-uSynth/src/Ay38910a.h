@@ -12,7 +12,7 @@
 /* Includes                                                             */
 /************************************************************************/
 
-#include "types.h"
+#include <stdint.h>
 
 /************************************************************************/
 /* Defines                                                              */
@@ -69,11 +69,11 @@ typedef enum {
 /* Public functions                                                     */
 /************************************************************************/
 
-void ay38910_init(Port AyParallelPort, Pin b1_pin, Pin bdir_pin);
-void ay38910_play_note(Channel chan, u8 note);
-void ay38910_play_noise(u8 sound);
-void ay38910_channel_mode(u8 mode);
-void ay38910_set_amplitude(Channel chan, u8 amplitude);
-void ay38910_set_envelope(EnvelopeShape shape, u16 frequency);
+void ay38910_init(void);
+void ay38910_play_note(Channel chan, uint8_t note);
+void ay38910_play_noise(uint8_t sound);
+void ay38910_channel_mode(uint8_t mode);
+void ay38910_set_amplitude(Channel chan, uint8_t amplitude);
+void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency);
 
 #endif /* AY38910A_H_ */

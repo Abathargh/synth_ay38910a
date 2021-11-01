@@ -16,8 +16,7 @@
 /************************************************************************/
 
 #include "Ay38910a.h"
-
-#include <avr/io.h>
+#include "pin_config.h"
 
 /************************************************************************/
 /* Defines                                                              */
@@ -40,9 +39,6 @@
  */
 #define OCR2AVAL       3
 
-#define BC1            7
-#define BDIR           6
-
 #define NOISE_REG      0x06
 #define MIXER_REG      0x07
 #define FINE_ENV_REG   0x0B
@@ -51,18 +47,17 @@
 
 #define MIXER_MASK     0xC0
 
-#define CHAN_TO_AMP_REG(c) (((u8)c / 2) + 8)
+#define CHAN_TO_AMP_REG(c) (((uint8_t)c / 2) + 8)
 
 
 /************************************************************************/
 /* Private function declarations                                        */
 /************************************************************************/
 
-static void clock_init(void);
 static void inactive_mode(void);
 static void latch_address_mode(void);
 static void write_mode(void);
-static void write_to_data_bus(u8 address, u8 data);
+static void write_to_data_bus(uint8_t address, uint8_t data);
 
 /************************************************************************/
 /* Private variables                                                    */
@@ -112,11 +107,10 @@ static const unsigned int magic_notes[] = {
  */
 void ay38910_init(void)
 {
-	DDRA = 0xFF; // 11111111
-	DDRB = 0xFF; // 00001000
-	DDRC = 0xFF; // 11000000
-	
-	clock_init();
+	InitOutPin(BC1_PIN);
+	InitOutPin(BDIR_PIN);
+	INIT_BUS_PORT();
+	oc2a_pin_config(OCR2AVAL);
 }
 
 /**
@@ -125,13 +119,10 @@ void ay38910_init(void)
  * @param chan the channel to program 
  * @ note the note to play depending on the internal mapping (0 off)
  */
-void ay38910_play_note(Channel chan, u8 note)
+void ay38910_play_note(Channel chan, uint8_t note)
 {
-	volatile u8 reg1 = (u8) chan;
-	volatile u8 reg2 = ((u8) chan) + 1;
-	
-	write_to_data_bus(reg1, 0xFF & magic_notes[note]);
-	write_to_data_bus(reg2, 0x0F & (magic_notes[note] >> 8));
+	write_to_data_bus((uint8_t)chan, 0xFF & magic_notes[note]);
+	write_to_data_bus((uint8_t)chan + 1, 0x0F & (magic_notes[note] >> 8));
 }
 
 /**
@@ -141,7 +132,7 @@ void ay38910_play_note(Channel chan, u8 note)
  *
  * @retval None
  */
-void ay38910_play_noise(u8 divider)
+void ay38910_play_noise(uint8_t divider)
 {
 	write_to_data_bus(NOISE_REG, 0x1F & divider);
 }
@@ -153,7 +144,7 @@ void ay38910_play_noise(u8 divider)
  *
  * @retval None
  */
-void ay38910_channel_mode(u8 mode)
+void ay38910_channel_mode(uint8_t mode)
 {
 	write_to_data_bus(MIXER_REG, MIXER_MASK | mode);
 }
@@ -169,17 +160,16 @@ void ay38910_channel_mode(u8 mode)
  
  * @retval None
  */
-void ay38910_set_amplitude(Channel chan, u8 amplitude)
+void ay38910_set_amplitude(Channel chan, uint8_t amplitude)
 {
-	u8 amplitude_reg = CHAN_TO_AMP_REG(chan);
-	write_to_data_bus(amplitude_reg, 0x1F & amplitude);
+	write_to_data_bus(CHAN_TO_AMP_REG(chan), 0x1F & amplitude);
 }
 
-void ay38910_set_envelope(EnvelopeShape shape, u16 frequency)
+void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
 {
 	write_to_data_bus(FINE_ENV_REG, 0xFF & frequency);
 	write_to_data_bus(COARSE_ENV_REG, 0xFF & (frequency >> 8));
-	write_to_data_bus(SHAPE_ENV_REG, 0x07 & ((u8)shape));
+	write_to_data_bus(SHAPE_ENV_REG, 0x07 & ((uint8_t)shape));
 }
 
 /************************************************************************/
@@ -192,32 +182,17 @@ void ay38910_set_envelope(EnvelopeShape shape, u16 frequency)
  *
  * @retval None
  */
-static void clock_init(void)
-{
-	// Reset the counter
-	TCNT2 = 0x00;
-	
-	// Sets the frequency to 2MHz 
-	OCR2A = OCR2AVAL;
-	
-	TCCR2A = (0 << COM2A1) | (1 << COM2A0) | // Enable output signal on OC2A pin
-			 (1 << WGM21)  | (0 << WGM20);   // Enable Clear Timer on Compare Mode
-	
-	TCCR2B = (0 << WGM22) |                            // MSB output enable
-			 (0 << CS22)  | (0 << CS21) | (1 << CS20); // Clock select with no prescaler
-	
-	// Disable the compare match interrupt for register A
-	TIMSK2 = 0;
-}
+
 
 /**
  * Set the PSG to inactive mode
  *
  * @retval None
  */
-static inline void inactive_mode(void)
+static void inactive_mode(void)
 {
-	PORTC = (0 << BC1) | (0 << BDIR); 
+	ResetPin(BC1_PIN);
+	ResetPin(BDIR_PIN);
 }
 
 /**
@@ -225,9 +200,10 @@ static inline void inactive_mode(void)
  *
  * @retval None
  */
-static inline void write_mode(void)
+static void write_mode(void)
 {
-	PORTC = (0 << BC1) | (1 << BDIR);
+	ResetPin(BC1_PIN);
+	SetPin(BDIR_PIN);
 }
 
 /**
@@ -235,21 +211,23 @@ static inline void write_mode(void)
  *
  * @retval None
  */
-static inline void latch_address_mode(void)
+static void latch_address_mode(void)
 {
-	PORTC = (1 << BC1) | (1 << BDIR);
+	SetPin(BC1_PIN);
+	SetPin(BDIR_PIN);
 }
 
-static void write_to_data_bus(u8 address, u8 data)
+static void write_to_data_bus(uint8_t address, uint8_t data)
 {
 	// Set the register address
 	inactive_mode();
-	PORTA = address;
+	SET_BUS_PORT(address);
 	latch_address_mode();
 	inactive_mode();
 	
 	//Write to the previously set register
 	write_mode();
-	PORTA = data;
+	SET_BUS_PORT(data);
 	inactive_mode();	
 }
+

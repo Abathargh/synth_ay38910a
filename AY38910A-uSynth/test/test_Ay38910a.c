@@ -15,9 +15,9 @@ void tearDown(void)
 {
 }
 
-void test_Ay38910a_NeedToImplement(void)
+void test_ay38910_play_note(void)
 {
-    TEST_IGNORE_MESSAGE("Need to Implement Ay38910a");
+	ay38910_play_note(CHANNEL_A, 20);
 }
 
 #endif // TEST
