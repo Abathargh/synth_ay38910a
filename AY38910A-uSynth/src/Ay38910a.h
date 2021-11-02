@@ -75,5 +75,6 @@ void ay38910_play_noise(uint8_t sound);
 void ay38910_channel_mode(uint8_t mode);
 void ay38910_set_amplitude(Channel chan, uint8_t amplitude);
 void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency);
+uint8_t ay38910_read_bus(void);
 
 #endif /* AY38910A_H_ */
