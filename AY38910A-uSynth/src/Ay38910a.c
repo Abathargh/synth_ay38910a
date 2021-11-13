@@ -16,28 +16,10 @@
 /************************************************************************/
 
 #include "Ay38910a.h"
-#include "pin_config.h"
 
 /************************************************************************/
 /* Defines                                                              */
 /************************************************************************/
-
-/**
- * We want to generate a 2MHz square wave as the input signal for
- * the clock pin of the AY38910A. Consider the following:
- *
- * f_clk = 16 MHz => T_clk = 0.0625 us
- * 
- * and knowing that:
- *
- * f_desired 2MHz => T_desired = 0.5 us
- *
- * we know that we have to generate a signal that peaks every 
- * T_desired/2, so T_del = 0.25 us
- *
- * OCR2VAL = T_clk/T_del - 1 = (0.0625 us / 0.25 us) - 1 = 3 
- */
-#define OCR2AVAL       3
 
 #define NOISE_REG      0x06
 #define MIXER_REG      0x07
@@ -96,6 +78,10 @@ static const unsigned int magic_notes[] = {
 	  0//off
 };
 
+static Pin  _bc1_pin;
+static Pin  _bdir_pin;
+static Port _bus_port;
+
 /************************************************************************/
 /* Function implementations                                             */
 /************************************************************************/
@@ -105,19 +91,22 @@ static const unsigned int magic_notes[] = {
  *
  * @retval None
  */
-void ay38910_init(void)
+void ay38910_init(Pin bc1_pin, Pin bdir_pin, Port bus_port)
 {
-	InitOutPin(BC1_PIN);
-	InitOutPin(BDIR_PIN);
-	INIT_BUS_PORT();
-	oc2a_pin_config(OCR2AVAL);
+	_bc1_pin  = bc1_pin;
+	_bdir_pin = bdir_pin;
+	_bus_port = bus_port;
+	
+	InitOutPin(bc1_pin);
+	InitOutPin(bdir_pin);
+	InitOutPort(bus_port);
 }
 
 /**
  * Plays a note on the specified channel
  *
  * @param chan the channel to program 
- * @ note the note to play depending on the internal mapping (0 off)
+ * @param note the note to play depending on the internal mapping (0 off)
  */
 void ay38910_play_note(Channel chan, uint8_t note)
 {
@@ -191,8 +180,8 @@ void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
  */
 static void inactive_mode(void)
 {
-	ResetPin(BC1_PIN);
-	ResetPin(BDIR_PIN);
+	ResetPin(_bc1_pin);
+	ResetPin(_bdir_pin);
 }
 
 /**
@@ -202,8 +191,8 @@ static void inactive_mode(void)
  */
 static void write_mode(void)
 {
-	ResetPin(BC1_PIN);
-	SetPin(BDIR_PIN);
+	ResetPin(_bc1_pin);
+	SetPin(_bdir_pin);
 }
 
 /**
@@ -213,21 +202,21 @@ static void write_mode(void)
  */
 static void latch_address_mode(void)
 {
-	SetPin(BC1_PIN);
-	SetPin(BDIR_PIN);
+	SetPin(_bc1_pin);
+	SetPin(_bdir_pin);
 }
 
 static void write_to_data_bus(uint8_t address, uint8_t data)
 {
 	// Set the register address
 	inactive_mode();
-	SET_BUS_PORT(address);
+	SetPort(_bus_port, address);
 	latch_address_mode();
 	inactive_mode();
 	
 	//Write to the previously set register
 	write_mode();
-	SET_BUS_PORT(data);
+	SetPort(_bus_port, data);
 	inactive_mode();	
 }
 

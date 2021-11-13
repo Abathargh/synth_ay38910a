@@ -12,6 +12,8 @@
 /* Includes                                                             */
 /************************************************************************/
 
+#include "pin_config.h"
+
 #include <stdint.h>
 
 /************************************************************************/
@@ -69,7 +71,7 @@ typedef enum {
 /* Public functions                                                     */
 /************************************************************************/
 
-void ay38910_init(void);
+void ay38910_init(Pin bc1_pin, Pin bdir_pin, Port bus_port);
 void ay38910_play_note(Channel chan, uint8_t note);
 void ay38910_play_noise(uint8_t sound);
 void ay38910_channel_mode(uint8_t mode);
