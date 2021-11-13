@@ -36,8 +36,6 @@
   :source:
     - src/**
     - inc/**
-    - /c/Users/Gianmarco/msys64/mingw64/avr/include
-    - /c/Users/Gianmarco/msys64/mingw64/avr/include/avr
   :support:
     - test/support
   :libraries: []
