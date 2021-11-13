@@ -9,6 +9,44 @@
 #define CLOCK_H_
 
 /************************************************************************/
+/* Includes                                                             */
+/************************************************************************/
+
+#include <avr/io.h>
+#include "pin_config.h"
+
+/************************************************************************/
+/* Defines                                                              */
+/************************************************************************/
+
+/**
+ * We want to generate a 2MHz square wave as the input signal for
+ * the clock pin of the AY38910A. Consider the following:
+ *
+ * f_clk = 16 MHz => T_clk = 0.0625 us
+ * 
+ * and knowing that:
+ *
+ * f_desired 2MHz => T_desired = 0.5 us
+ *
+ * we know that we have to generate a signal that peaks every 
+ * T_desired/2, so T_del = 0.25 us
+ *
+ * OCR2VAL = T_clk/T_del - 1 = (0.0625 us / 0.25 us) - 1 = 3 
+ */
+#define OCR2AVAL       3
+
+/************************************************************************/
+/* Private function declarations                                        */
+/************************************************************************/
+
+/************************************************************************/
+/* Private variables                                                    */
+/************************************************************************/
+
+static Pin oc2a_pin = {&DDRB, &PORTB, 4};
+
+/************************************************************************/
 /* Public functions                                                     */
 /************************************************************************/
 
@@ -21,7 +59,7 @@
  */
 void oc2a_pin_config(uint8_t ocr2a_value)
 {
-	InitOutPin(OC2A_PIN);
+	InitOutPin(oc2a_pin);
 	// Reset the counter
 	TCNT2 = 0x00;
 	
