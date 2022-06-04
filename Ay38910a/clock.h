@@ -5,7 +5,6 @@
 /* Includes                                                             */
 /************************************************************************/
 
-#include <avr/io.h>
 #include "pin_config.h"
 #include "pinout.h"
 
