@@ -121,7 +121,7 @@ static void init_contrast(void)
 	// TODO PWM DT => contrast level
 	// N.B. if using 2 rows, you need an higher V for the same
 	// contrast level
-	OCR0A = 70;
+	OCR0A = 95;
 
 	TCCR0A = (1 << COM0A1) | (0 << COM0A0) | (1 << WGM01) | (1 << WGM00);
 	TCCR0B = (0 << WGM02)  | (0 << CS02)   | (0 << CS01)  | (1 << CS00);
@@ -151,16 +151,17 @@ void delay_us(uint16_t us)
 							 : "r" (us));
 }
 
+
 inline __attribute__((always_inline))
 void delay_ms(uint16_t ms)
 {
 	// TODO optimization => try to remove MOVs since R25:R24 should be used as
 	// TODO first input register
 	asm volatile("MOV ZH,%B0\n\t"  // MOV: 1 cycle
-							 "MOV ZL,%A0\n\t"  // MOV: 1 cycle
-							 "OUTER%=:\n\t"
+							 "MOV ZL,%A0\n\t"  // MOV: 1 cycle => 1 + (16016 + 4) * ms = 16020 * ms + 1
+							 "OUTER%=:\n\t"    // (4000 + 4) * 4 = 16016
 							 "LDI R18,4\n\t"   // LDI: 1 cycle
-							 "MILLISEC%=:\n\t"
+							 "MILLISEC%=:\n\t" // 16 * 250 = 4000 cycles
 							 "LDI R17,250\n\t" // LDI: 1 cycle
 							 "MICROSEC%=:\n\t" // MICROSEC LOOP: 16 cycles tot (including previous LDI per cycle)
 							 "NOP\n\t"
