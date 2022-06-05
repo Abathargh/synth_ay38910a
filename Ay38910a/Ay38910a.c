@@ -67,15 +67,15 @@ static void write_to_data_bus(uint8_t address, uint8_t data);
  * Based on these frequencies https://pages.mtu.edu/~suits/notefreqs.html
  */
 static const unsigned int magic_notes[] = {
-        4049,
-        3823, 3607, 3405, 3214, 3034, 2864, 2703, 2551, 2408, 2273, 2145, 2025,
-        1911, 1804, 1703, 1607, 1517, 1432, 1351, 1276, 1204, 1136, 1073, 1012,
-        956, 902, 851, 804, 758, 716, 676, 638, 602, 568, 536, 506,
-        478, 451, 426, 402, 379, 358, 338, 319, 301, 284, 268, 253,
-        239, 225, 213, 201, 190, 179, 169, 159, 150, 142, 134, 127,
-        119, 113, 106, 100, 95, 89, 84, 80, 75, 71, 67, 63,
-        60, 56, 53, 50, 47, 45, 42, 40, 38, 36, 34, 32, 30,
-        28, 27, 25, 24, 22, 21, 20, 19, 18, 17, 16,
+	4049,
+	3823, 3607, 3405, 3214, 3034, 2864, 2703, 2551, 2408, 2273, 2145, 2025,
+	1911, 1804, 1703, 1607, 1517, 1432, 1351, 1276, 1204, 1136, 1073, 1012,
+	956, 902, 851, 804, 758, 716, 676, 638, 602, 568, 536, 506,
+	478, 451, 426, 402, 379, 358, 338, 319, 301, 284, 268, 253,
+	239, 225, 213, 201, 190, 179, 169, 159, 150, 142, 134, 127,
+	119, 113, 106, 100, 95, 89, 84, 80, 75, 71, 67, 63,
+	60, 56, 53, 50, 47, 45, 42, 40, 38, 36, 34, 32, 30,
+	28, 27, 25, 24, 22, 21, 20, 19, 18, 17, 16,
 };
 
 
@@ -90,9 +90,9 @@ static const unsigned int magic_notes[] = {
  */
 void ay38910_init()
 {
-    InitOutPin(bc1_pin);
-    InitOutPin(bdir_pin);
-    InitOutPort(ay_bus_port);
+	InitOutPin(bc1_pin);
+	InitOutPin(bdir_pin);
+	InitOutPort(ay_bus_port);
 }
 
 /**
@@ -103,8 +103,9 @@ void ay38910_init()
  */
 void ay38910_play_note(Channel chan, uint8_t note)
 {
-    write_to_data_bus((uint8_t)chan, magic_notes[note] & 0xFF);
-    write_to_data_bus((uint8_t)chan + 1, (magic_notes[note] >> 8) & 0x0F);
+	// assert(note >= 0 && note <= sizeof(magic_notes));
+	write_to_data_bus((uint8_t)chan, magic_notes[note] & 0xFF);
+	write_to_data_bus((uint8_t)chan + 1, (magic_notes[note] >> 8) & 0x0F);
 }
 
 /**
@@ -116,7 +117,7 @@ void ay38910_play_note(Channel chan, uint8_t note)
  */
 void ay38910_play_noise(uint8_t divider)
 {
-    write_to_data_bus(NOISE_REG, 0x1F & divider);
+	write_to_data_bus(NOISE_REG, 0x1F & divider);
 }
 
 /**
@@ -128,7 +129,7 @@ void ay38910_play_noise(uint8_t divider)
  */
 void ay38910_channel_mode(uint8_t mode)
 {
-    write_to_data_bus(MIXER_REG, MIXER_MASK | mode);
+	write_to_data_bus(MIXER_REG, MIXER_MASK | mode);
 }
 
 /**
@@ -144,14 +145,14 @@ void ay38910_channel_mode(uint8_t mode)
  */
 void ay38910_set_amplitude(Channel chan, uint8_t amplitude)
 {
-    write_to_data_bus(CHAN_TO_AMP_REG(chan), amplitude & 0x1F);
+	write_to_data_bus(CHAN_TO_AMP_REG(chan), amplitude & 0x1F);
 }
 
 void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
 {
-    write_to_data_bus(FINE_ENV_REG, frequency & 0xFF);
-    write_to_data_bus(COARSE_ENV_REG, (frequency >> 8) & 0xFF);
-    write_to_data_bus(SHAPE_ENV_REG, ((uint8_t)shape) & 0x0F);
+	write_to_data_bus(FINE_ENV_REG, frequency & 0xFF);
+	write_to_data_bus(COARSE_ENV_REG, (frequency >> 8) & 0xFF);
+	write_to_data_bus(SHAPE_ENV_REG, ((uint8_t)shape) & 0x0F);
 }
 
 /************************************************************************/
@@ -173,8 +174,8 @@ void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
  */
 static inline void inactive_mode(void)
 {
-    ResetPin(bc1_pin);
-    ResetPin(bdir_pin);
+	ResetPin(bc1_pin);
+	ResetPin(bdir_pin);
 }
 
 /**
@@ -184,8 +185,8 @@ static inline void inactive_mode(void)
  */
 static inline void write_mode(void)
 {
-    ResetPin(bc1_pin);
-    SetPin(bdir_pin);
+	ResetPin(bc1_pin);
+	SetPin(bdir_pin);
 }
 
 /**
@@ -195,20 +196,20 @@ static inline void write_mode(void)
  */
 static inline void latch_address_mode(void)
 {
-    SetPin(bc1_pin);
-    SetPin(bdir_pin);
+	SetPin(bc1_pin);
+	SetPin(bdir_pin);
 }
 
 static inline void write_to_data_bus(uint8_t address, uint8_t data)
 {
-    // Set the register address
-    inactive_mode();
-    SetPort(ay_bus_port, address);
-    latch_address_mode();
-    inactive_mode();
+	// Set the register address
+	inactive_mode();
+	SetPort(ay_bus_port, address);
+	latch_address_mode();
+	inactive_mode();
 
-    //Write to the previously set register
-    write_mode();
-    SetPort(ay_bus_port, data);
-    inactive_mode();
+	//Write to the previously set register
+	write_mode();
+	SetPort(ay_bus_port, data);
+	inactive_mode();
 }
