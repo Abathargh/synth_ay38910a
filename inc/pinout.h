@@ -10,7 +10,7 @@
 
 #define rs_pin       E,5
 #define en_pin       E,4
-#define lcd_bus      K
+#define lcd_bus      C
 #define pwm_ch0      B,7
 
 #endif //AY3891_SYNTH_PINOUT_H
