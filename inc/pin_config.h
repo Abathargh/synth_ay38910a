@@ -12,10 +12,10 @@
 /************************************************************************/
 
 #define INIT_OUT_PIN(PRT,PIN)   ((DDR ## PRT)  |= (1 << PIN))
-#define INIT_IN_PIN(PRT,PIN)    ((DDR ## PRT)  &  ~(1 << PIN))
+#define INIT_IN_PIN(PRT,PIN)    ((DDR ## PRT)  &=  ~(1 << PIN))
 #define INIT_PULL_PIN(PRT,PIN)  ((PORT ## PRT) |= (1 << PIN))
 
-#define GET_PIN(PRT,PIN)        ((PORT ## PRT) &   (1 << PIN))
+#define GET_PIN(PRT,BIT)        ((PIN ## PRT)  &   (1 << BIT))
 #define SET_PIN(PRT,PIN)        ((PORT ## PRT) |=  (1 << PIN))
 #define RST_PIN(PRT,PIN)        ((PORT ## PRT) &= ~(1 << PIN))
 

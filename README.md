@@ -10,11 +10,11 @@ sudo apt install gcc-avr gdb-avr avrdude avr-libc # debian-like
 
 ### Mingw64 over msys2
 ```bash
-pacman -Ss mingw-w64-x86_64-avr-binutils \
-           mingw-w64-x86_64-avr-gcc \
-           mingw-w64-x86_64-avr-gdb \
-           mingw-w64-x86_64-avr-libc \
-           mingw-w64-x86_64-avrdude
+pacman -S mingw-w64-x86_64-avr-binutils \
+          mingw-w64-x86_64-avr-gcc \
+          mingw-w64-x86_64-avr-gdb \
+          mingw-w64-x86_64-avr-libc \
+          mingw-w64-x86_64-avrdude
 ```
 
 # Build
