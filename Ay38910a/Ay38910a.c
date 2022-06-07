@@ -1,7 +1,7 @@
 /**
  * Ay38910a.c
  *
- * This module implements the logic for that drives the AY38910A
+ * This module implements the a low level driver for the AY38910A
  * Programmable sound Generator Chip. This is achieved by
  * implementing the following features:
  *   - a 2MHz clock signal to use as the PSG input
@@ -33,6 +33,23 @@
 
 #define CHAN_TO_AMP_REG(c) (((uint8_t)c / 2) + 8)
 
+/**
+ * We want to generate a 2MHz square wave as the input signal for
+ * the clock pin of the AY38910A. Consider the following:
+ *
+ * f_clk = 16 MHz => T_clk = 0.0625 us
+ *
+ * and knowing that:
+ *
+ * f_desired 2MHz => T_desired = 0.5 us
+ *
+ * we know that we have to generate a signal that peaks every
+ * T_desired/2, so T_del = 0.25 us
+ *
+ * OCR2A = T_clk/T_del - 1 = (0.0625 us / 0.25 us) - 1 = 3
+ */
+#define OCR2A_VALUE       3
+
 
 /************************************************************************/
 /* Private function declarations                                        */
@@ -42,6 +59,7 @@ static void inactive_mode(void);
 static void latch_address_mode(void);
 static void write_mode(void);
 static void write_to_data_bus(uint8_t address, uint8_t data);
+static void oc2a_pin_config(void);
 
 /************************************************************************/
 /* Private variables                                                    */
@@ -64,7 +82,7 @@ static void write_to_data_bus(uint8_t address, uint8_t data);
  *
  * The range of notes is from a B0 to a B8 (8 octaves).
  *
- * Based on these frequencies https://pages.mtu.edu/~suits/notefreqs.html
+ * Based on these frequencies https://pages.mtu.edu/~suits/notefreqs.html.
  */
 static const unsigned int magic_notes[] = {
 	4049,
@@ -93,6 +111,7 @@ void ay38910_init()
 	InitOutPin(bc1_pin);
 	InitOutPin(bdir_pin);
 	InitOutPort(ay_bus_port);
+	oc2a_pin_config();
 }
 
 /**
@@ -103,7 +122,7 @@ void ay38910_init()
  */
 void ay38910_play_note(Channel chan, uint8_t note)
 {
-	// assert(note >= 0 && note <= sizeof(magic_notes));
+	// TODO assert(note >= 0 && note <= sizeof(magic_notes));
 	write_to_data_bus((uint8_t)chan, magic_notes[note] & 0xFF);
 	write_to_data_bus((uint8_t)chan + 1, (magic_notes[note] >> 8) & 0x0F);
 }
@@ -200,6 +219,12 @@ static inline void latch_address_mode(void)
 	SetPin(bdir_pin);
 }
 
+/**
+ * Writes to the AY38910a data bus
+ *
+ * @param address the address of the register to use
+ * @param data the payload to write
+ */
 static inline void write_to_data_bus(uint8_t address, uint8_t data)
 {
 	// Set the register address
@@ -212,4 +237,28 @@ static inline void write_to_data_bus(uint8_t address, uint8_t data)
 	write_mode();
 	SetPort(ay_bus_port, data);
 	inactive_mode();
+}
+
+
+/**
+ * Initializes Timer2 in Toggle on Compare Match mode, in order
+ * to output a square wave on the OC2A Pin (PB4).
+ *
+ * @param ocr2a_value the value of the timer threshold
+ * @retval None
+ */
+static void oc2a_pin_config(void)
+{
+	InitOutPin(oc2a_pin);
+
+	OCR2A = OCR2A_VALUE;
+
+	TCCR2A = (0 << COM2A1) | (1 << COM2A0) | // Enable output signal on OC2A pin
+					 (1 << WGM21)  | (0 << WGM20);   // Enable Clear Timer on Compare Mode
+
+	TCCR2B = (0 << WGM22) |                            // MSB output enable
+					 (0 << CS22)  | (0 << CS21) | (1 << CS20); // Clock select with no prescaler
+
+	// Disable the compare match interrupt for register A
+	TIMSK2 = 0;
 }
