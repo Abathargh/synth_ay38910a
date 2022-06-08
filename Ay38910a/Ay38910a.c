@@ -178,12 +178,7 @@ void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
 /* Private Helpers                                                      */
 /************************************************************************/
 
-/**
- * Initializes the TIMER2A so that the OC2A pin outputs a
- * 2MHz clock signal that can be used to drive the AY38910A
- *
- * @retval None
- */
+
 
 
 /**
@@ -233,7 +228,7 @@ static inline void write_to_data_bus(uint8_t address, uint8_t data)
 	latch_address_mode();
 	inactive_mode();
 
-	//Write to the previously set register
+	// Write to the previously set register
 	write_mode();
 	SetPort(ay_bus_port, data);
 	inactive_mode();
@@ -242,7 +237,7 @@ static inline void write_to_data_bus(uint8_t address, uint8_t data)
 
 /**
  * Initializes Timer2 in Toggle on Compare Match mode, in order
- * to output a square wave on the OC2A Pin (PB4).
+ * to output a 2MHz square wave on the OC2A Pin (PB4).
  *
  * @param ocr2a_value the value of the timer threshold
  * @retval None

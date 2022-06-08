@@ -54,7 +54,6 @@
 #define A_NOTE       10
 #define A_SHARP_NOTE 11
 
-// TODO this does not work if the first note is a B, think about the approach
 #define NOTE(N,OCTAVE) (N + 12*OCTAVE)
 
 /************************************************************************/
