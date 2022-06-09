@@ -1,11 +1,14 @@
 # Ay38910a Synth
 
+A synth based on the AY38910a programmable sound generator chip, implemented on an 
+ATMega-based system.
+
 ## Pre-req
 
 ### Debian-like
 
 ```bash
-sudo apt install gcc-avr gdb-avr avrdude avr-libc # debian-like
+sudo apt install gcc-avr gdb-avr avrdude avr-libc
 ```
 
 ### Mingw64 over msys2
