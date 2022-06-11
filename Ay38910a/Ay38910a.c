@@ -167,6 +167,11 @@ void ay38910_set_amplitude(Channel chan, uint8_t amplitude)
 	write_to_data_bus(CHAN_TO_AMP_REG(chan), amplitude & 0x1F);
 }
 
+/**
+ * Sets the envelope shape and frequency
+ * @param shape the shape of the envelop to enable
+ * @param frequency the frequency of the envelop
+ */
 void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
 {
 	write_to_data_bus(FINE_ENV_REG, frequency & 0xFF);
@@ -177,9 +182,6 @@ void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
 /************************************************************************/
 /* Private Helpers                                                      */
 /************************************************************************/
-
-
-
 
 /**
  * Set the PSG to inactive mode
