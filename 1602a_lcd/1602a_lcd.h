@@ -1,7 +1,15 @@
 #ifndef AY38910A_SYNTH_1602A_LCD_H
 #define AY38910A_SYNTH_1602A_LCD_H
 
+/************************************************************************/
+/* Includes                                                             */
+/************************************************************************/
+
 #include <stdint.h>
+
+/************************************************************************/
+/* Defines                                                              */
+/************************************************************************/
 
 void lcd1602a_init(void);
 void lcd1602a_display_on(void);
@@ -15,4 +23,5 @@ void lcd1602a_print(const char *str);
 void lcd1602a_print_row(const char *str, uint8_t row);
 void delay_us(uint16_t us);
 void delay_ms(uint16_t ms);
+
 #endif
