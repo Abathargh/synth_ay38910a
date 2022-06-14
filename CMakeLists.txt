@@ -5,7 +5,7 @@ set(CMAKE_GENERATOR "Unix Makefiles")
 project(ay38910a_synth C)
 
 # Config settings
-if(EXISTS ../conf.json)
+if(EXISTS ${PROJECT_SOURCE_DIR}/conf.json)
     file(READ conf.json PROJECT_CONF)
     string(JSON SERIAL_PORT GET ${PROJECT_CONF} port)
     if(SERIAL_PORT STREQUAL "")
@@ -15,7 +15,7 @@ if(EXISTS ../conf.json)
     endif()
 else()
     file(TOUCH conf.json)
-    file(WRITE conf.json "{\n\t\"port\": \"\",\n}")
+    file(WRITE conf.json "{\n\t\"port\": \"\"\n}")
     message(FATAL_ERROR "conf.json not found: an empty one was generated. "
             "Set up the serial port and re-initialize the Cmake project")
 endif()
