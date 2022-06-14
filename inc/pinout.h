@@ -26,9 +26,6 @@
 #define bc1_pin      C,6
 #define ay_bus_port  A
 
-
-/*
-
-*/
+#define button       D,2
 
 #endif //AY3891_SYNTH_PINOUT_H

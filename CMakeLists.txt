@@ -22,11 +22,13 @@ set(GCC_FLAGS "-Wall -Wextra -Og -ggdb -DF_CPU=16000000 -mmcu=${MCU}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_FLAGS}")
 
 
-file(GLOB_RECURSE SOURCES "main.c" "1602a_lcd/*.*" "inc/*.*" "Ay38910a/*.*" "logger/*.*")
+
+file(GLOB_RECURSE SOURCES "main.c" "1602a_lcd/*.*" "inc/*.*" "Ay38910a/*.*" "logger/*.*" "keyboard_ifc/*.*")
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
 
 target_include_directories(${PROJECT_NAME}.elf PRIVATE Ay38910a)
 target_include_directories(${PROJECT_NAME}.elf PRIVATE 1602a_lcd)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE keyboard_ifc)
 target_include_directories(${PROJECT_NAME}.elf PRIVATE logger)
 target_include_directories(${PROJECT_NAME}.elf PRIVATE inc)
 
