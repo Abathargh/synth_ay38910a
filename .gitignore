@@ -1,4 +1,6 @@
 cmake-build-debug*/
 build/
 .idea/
+.cache/
+.vscode/
 conf.json
