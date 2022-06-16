@@ -103,8 +103,6 @@ static const unsigned int magic_notes[] = {
 
 /**
  * Initializes the ay38910a module
- *
- * @retval None
  */
 void ay38910_init()
 {
@@ -131,8 +129,6 @@ void ay38910_play_note(Channel chan, uint8_t note)
  * Plays a sound on the noise channel
  *
  * @param divider the divider value to manipulate the noise
- *
- * @retval None
  */
 void ay38910_play_noise(uint8_t divider)
 {
@@ -143,8 +139,6 @@ void ay38910_play_noise(uint8_t divider)
  * Enables/Disables tone/noise generation on one or more channels
  *
  * @param mode the mode(s) to enable, using the ENABLE/DISABLE defines
- *
- * @retval None
  */
 void ay38910_channel_mode(uint8_t mode)
 {
@@ -155,12 +149,10 @@ void ay38910_channel_mode(uint8_t mode)
  * Sets the amplitude for the specified channel
  *
  * @param chan the channel that will have the passed amplitude
- * @param amplitude the amplitude to set, the first 4 bytes
- *        refer to the amplitude itself (0-16), the fifth byte
+ * @param amplitude the amplitude to set, the first 4 bits
+ *        refer to the amplitude itself (0-16), the fifth but
  *        enables the envelope filter and disables the use of the
- *        first three bytes. Use with the enable/disable macros.
-
- * @retval None
+ *        first three bits. Use with the enable/disable macros.
  */
 void ay38910_set_amplitude(Channel chan, uint8_t amplitude)
 {
@@ -169,6 +161,7 @@ void ay38910_set_amplitude(Channel chan, uint8_t amplitude)
 
 /**
  * Sets the envelope shape and frequency
+ *
  * @param shape the shape of the envelop to enable
  * @param frequency the frequency of the envelop
  */
@@ -185,10 +178,9 @@ void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
 
 /**
  * Set the PSG to inactive mode
- *
- * @retval None
  */
-static inline void inactive_mode(void)
+static inline __attribute__((always_inline))
+void inactive_mode(void)
 {
 	ResetPin(bc1_pin);
 	ResetPin(bdir_pin);
@@ -196,10 +188,9 @@ static inline void inactive_mode(void)
 
 /**
  * Set the PSG to write mode
- *
- * @retval None
  */
-static inline void write_mode(void)
+static inline __attribute__((always_inline))
+void write_mode(void)
 {
 	ResetPin(bc1_pin);
 	SetPin(bdir_pin);
@@ -207,10 +198,9 @@ static inline void write_mode(void)
 
 /**
  * Set the PSG to latch address mode
- *
- * @retval None
  */
-static inline void latch_address_mode(void)
+static inline __attribute__((always_inline))
+void latch_address_mode(void)
 {
 	SetPin(bc1_pin);
 	SetPin(bdir_pin);
@@ -251,10 +241,10 @@ static void oc2a_pin_config(void)
 	OCR2A = OCR2A_VALUE;
 
 	TCCR2A = (0 << COM2A1) | (1 << COM2A0) | // Enable output signal on OC2A pin
-					 (1 << WGM21)  | (0 << WGM20);   // Enable Clear Timer on Compare Mode
+	         (1 << WGM21)  | (0 << WGM20);   // Enable Clear Timer on Compare Mode
 
 	TCCR2B = (0 << WGM22) |                            // MSB output enable
-					 (0 << CS22)  | (0 << CS21) | (1 << CS20); // Clock select with no prescaler
+	         (0 << CS22)  | (0 << CS21) | (1 << CS20); // Clock select with no prescaler
 
 	// Disable the compare match interrupt for register A
 	TIMSK2 = 0;
