@@ -54,8 +54,7 @@
 #define A_NOTE       10
 #define A_SHARP_NOTE 11
 
-// TODO octave 0 does not work or better octave 0 is b to b instead of c to c
-#define NOTE(N,OCTAVE) ((N + 12*OCTAVE)%96)
+#define NOTE(N,OCTAVE) ((N + 12*(OCTAVE - 1)) % 97)
 
 /************************************************************************/
 /* Typedefs                                                             */

@@ -232,7 +232,6 @@ static inline void write_to_data_bus(uint8_t address, uint8_t data)
  * to output a 2MHz square wave on the OC2A Pin (PB4).
  *
  * @param ocr2a_value the value of the timer threshold
- * @retval None
  */
 static void oc2a_pin_config(void)
 {
