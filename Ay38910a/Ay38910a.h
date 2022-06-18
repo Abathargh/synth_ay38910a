@@ -54,7 +54,8 @@
 #define A_NOTE       10
 #define A_SHARP_NOTE 11
 
-#define NOTE(N,OCTAVE) ((N + 12*(OCTAVE - 1)) % 97)
+#define NOTE(N,OCTAVE) (((N + 12*(OCTAVE - 1)) % \
+                          N_NOTES + N_NOTES) % N_NOTES)
 
 /************************************************************************/
 /* Typedefs                                                             */
