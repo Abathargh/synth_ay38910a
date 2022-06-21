@@ -18,6 +18,7 @@ volatile uint8_t note = 20;
  *  - i2c w pcf8574
  *  - debug uart?
  * 	- application logic
+ *  - settings in eeprom
  */
 
 
@@ -32,13 +33,34 @@ int main(void)
 
 
 	ay38910_channel_mode(CHA_TONE_ENABLE);
-	ay38910_set_amplitude(CHANNEL_A, 15);
+	ay38910_set_amplitude(CHANNEL_A, 0);
 
 	keyboard_init();
+	init_adc();
 
 	sei();
 
-	bool pressed = false;
+	volatile uint16_t pot = get_potentiometer();
+	WRITE_BUF("Pot: %d", pot);
+	lcd1602a_print_row(buf, 0);
+
+	while(1)
+	{
+		volatile uint16_t new_pot = get_potentiometer();
+		int diff = new_pot - pot;
+		if(diff < -5 || diff > 5)
+		{
+			WRITE_BUF("Pot: %d", new_pot);
+			lcd1602a_print_row(buf, 0);
+			pot = new_pot;
+		}
+	}
+	
+}
+
+
+/*
+bool pressed = false;
 	bool last = is_pressed();
 	while(1)
 	{
@@ -63,6 +85,5 @@ int main(void)
 		}
 		last = pressed;
 	}
-}
-
+*/
 
