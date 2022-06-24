@@ -32,12 +32,12 @@ set(AVRDUDE_PRG_STR stk500v2 -D -b 115200)
 set(MCU "atmega2560")
 
 file(GLOB_RECURSE SOURCES "main.c" "1602a_lcd/*.*" "inc/*.*" "Ay38910a/*.*" "logger/*.*")
-add_executable(ay38910a_synth.elf ${SOURCES})
+add_executable(${PROJECT_NAME}.elf ${SOURCES})
 
-target_include_directories(ay38910a_synth.elf PRIVATE Ay38910a)
-target_include_directories(ay38910a_synth.elf PRIVATE 1602a_lcd)
-target_include_directories(ay38910a_synth.elf PRIVATE logger)
-target_include_directories(ay38910a_synth.elf PRIVATE inc)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE Ay38910a)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE 1602a_lcd)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE logger)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE inc)
 
 set_property(TARGET ${PROJECT_NAME}.elf
         APPEND
