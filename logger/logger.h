@@ -11,16 +11,16 @@
 /************************************************************************/
 
 /**
- * These baud rate values to be passed to the UBRR register were taken 
- * section 22.11 of theATMega2560 datasheet, and are valid with a 16MHz
- * clock signal.
+ * The baud rate formula was taken from section 22.5 of the ATMega2560 
+ * datasheet, and is based on having the F_CPU macro at disposal. This 
+ * formula works for the ATMega644 too.
  */
 
 #ifndef F_CPU
-#error The logger module requires to define the F_CPU 
+#warning The logger module requires to define F_CPU, defaulting to 16MHz
+#define F_CPU 16000000
 #endif
 
-// Based on the ATMega2560 datasheet
 #define BAUD_VAL(b) (F_CPU / 16 / b - 1)
 
 /**********************
@@ -38,6 +38,6 @@ typedef enum {
 /************************************************************************/
 
 void logger_init(baudrate_t baud);
-void print_error(const char *msg);
+void logger_print(const char *msg);
 
 #endif
