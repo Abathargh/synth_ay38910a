@@ -41,6 +41,7 @@
 #define __UCSZ0(x) UCSZ ## x ## 0
 #define __UDR(x)   UDR  ## x
 #define __UDRE(x)  UDRE ## x
+#define __TXEN(x)  TXEN ## x
 
 #define _UBRRH(x) __UBRRH(x) 
 #define _UBRRL(x) __UBRRL(x) 
@@ -52,6 +53,7 @@
 #define _UCSZ0(x) __UCSZ0(x) 
 #define _UDR(x)   __UDR(x)
 #define _UDRE(x)  __UDRE(x)
+#define _TXEN(x)  __TXEN(x)
 
 #define UBRRH _UBRRH(LOGGER_PORT)
 #define UBRRL _UBRRL(LOGGER_PORT)
@@ -63,6 +65,7 @@
 #define UCSZ0 _UCSZ0(LOGGER_PORT)
 #define UDR   _UDR(LOGGER_PORT)
 #define UDRE  _UDRE(LOGGER_PORT)
+#define TXEN  _TXEN(LOGGER_PORT)
 
 
 /************************************************************************/
@@ -74,7 +77,7 @@ void logger_init(baudrate_t baud)
 {
   UBRRH = (uint8_t)(baud >> 8); 
   UBRRL = (uint8_t) baud;
-  UCSRB = (1 << TXEN3);  
+  UCSRB = (1 << TXEN);  
 
   // 8-bit 1-stop bit
   UCSRC = (1 << UCSZ2) | (1 << UCSZ1) | (1 << UCSZ0);  
