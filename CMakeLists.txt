@@ -23,7 +23,7 @@ endif()
 # C related stuff
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_COMPILER avr-gcc)
-set(CMAKE_ASM_COMPILER  avr-gcc)
+set(CMAKE_ASM_COMPILER avr-gcc)
 set(GCC_FLAGS "-Wall -Wextra -Og -DF_CPU=16000000 -mmcu=atmega2560")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_FLAGS}")
 
