@@ -24,12 +24,12 @@ endif()
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_COMPILER avr-gcc)
 set(CMAKE_ASM_COMPILER avr-gcc)
-set(GCC_FLAGS "-Wall -Wextra -Og -DF_CPU=16000000 -mmcu=atmega2560")
+set(MCU "atmega2560")
+set(GCC_FLAGS "-Wall -Wextra -Og -ggdb -DF_CPU=16000000 -mmcu=${MCU}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_FLAGS}")
 
 # avrdude settings
-set(AVRDUDE_PRG_STR stk500v2 -D -b 115200)
-set(MCU "atmega2560")
+set(AVRDUDE_PRG_STR stk500v2 -D -b 115200 -P ${SERIAL_PORT})
 
 file(GLOB_RECURSE SOURCES "main.c" "1602a_lcd/*.*" "inc/*.*" "Ay38910a/*.*" "logger/*.*")
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
@@ -51,7 +51,7 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf
         )
 
 add_custom_target(flash
-        COMMAND avrdude -c ${AVRDUDE_PRG_STR} -P ${SERIAL_PORT} -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+        COMMAND avrdude -c ${AVRDUDE_PRG_STR} -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
         COMMENT "flashes the hex file onto the MCU"
         )
 
