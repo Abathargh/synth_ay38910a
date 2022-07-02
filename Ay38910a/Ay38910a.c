@@ -46,10 +46,27 @@
  * we know that we have to generate a signal that peaks every
  * T_desired/2, so T_del = 0.25 us
  *
- * OCR2A = T_clk/T_del - 1 = (0.0625 us / 0.25 us) - 1 = 3
+ * OCRxx = T_del/T_clk - 1 = (0.25 us / 0.0625 us) - 1 = 3
+ *
+ * In general, if F_CPU is defined and known in advance, the value 
+ * for the output compare register can be obtained with the following 
+ * formula:
+ *
+ * OCRxx = (F_CPU/(2*F_TIM)) - 1 
+ *
  */
-#define OCR2A_VALUE       3
 
+#if defined(F_CPU)
+
+#define F_TIM        2000000
+#define AY_CLK_OCR   (F_CPU/(2*F_TIM)) - 1
+
+#else
+
+// Fallback on the value with a 16MHz clock if F_CPU is not defined
+#define AY_CLK_OCR   3
+
+#endif
 
 /************************************************************************/
 /* Private function declarations                                        */
@@ -237,7 +254,7 @@ static void oc2a_pin_config(void)
 {
 	InitOutPin(oc2a_pin);
 
-	OCR2A = OCR2A_VALUE;
+	OCR2A = AY_CLK_OCR;
 
 	TCCR2A = (0 << COM2A1) | (1 << COM2A0) | // Enable output signal on OC2A pin
 	         (1 << WGM21)  | (0 << WGM20);   // Enable Clear Timer on Compare Mode
