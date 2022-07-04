@@ -54,6 +54,8 @@
 #define A_NOTE       10
 #define A_SHARP_NOTE 11
 
+#define N_NOTES      97 /* From B0 to B8 */
+
 #define NOTE(N,OCTAVE) (((N + 12*(OCTAVE - 1)) % \
                           N_NOTES + N_NOTES) % N_NOTES)
 

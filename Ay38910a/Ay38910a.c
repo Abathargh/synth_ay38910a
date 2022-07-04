@@ -167,7 +167,7 @@ void ay38910_channel_mode(uint8_t mode)
  *
  * @param chan the channel that will have the passed amplitude
  * @param amplitude the amplitude to set, the first 4 bits
- *        refer to the amplitude itself (0-16), the fifth but
+ *        refer to the amplitude itself (0-16), the fifth bit
  *        enables the envelope filter and disables the use of the
  *        first three bits. Use with the enable/disable macros.
  */
