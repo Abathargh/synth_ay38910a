@@ -4,33 +4,23 @@ set(CMAKE_SYSTEM_NAME "Generic")
 set(CMAKE_GENERATOR "Unix Makefiles")
 project(ay38910a_synth C)
 
-# Config settings
-if(EXISTS ${PROJECT_SOURCE_DIR}/conf.json)
-    file(READ conf.json PROJECT_CONF)
-    string(JSON SERIAL_PORT GET ${PROJECT_CONF} port)
-    if(SERIAL_PORT STREQUAL "")
-        message(FATAL_ERROR "Empty serial port in conf.json")
-    else()
-        message("Flashing will happen on serial port: ${SERIAL_PORT}")
-    endif()
-else()
-    file(TOUCH conf.json)
-    file(WRITE conf.json "{\n\t\"port\": \"\"\n}")
-    message(FATAL_ERROR "conf.json not found: an empty one was generated. "
-            "Set up the serial port and re-initialize the Cmake project")
-endif()
+# Set the MCU
+if (NOT MCU)
+  set(MCU "atmega644")
+endif (NOT MCU)
+
+# avrdude settings
+if (NOT AVRDUDE_PRG_STR)
+  set(AVRDUDE_PRG_STR atmelice)
+endif (NOT AVRDUDE_PRG_STR)
 
 # C related stuff
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_COMPILER avr-gcc)
 set(CMAKE_ASM_COMPILER avr-gcc)
-set(MCU "atmega644")
 set(GCC_FLAGS "-Wall -Wextra -Og -ggdb -DF_CPU=16000000 -mmcu=${MCU}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_FLAGS}")
 
-# avrdude settings
-set(AVRDUDE_PRG_STR atmelice)
-#set(AVRDUDE_PRG_STR stk500v2 -D -b 115200 -P ${SERIAL_PORT})
 
 file(GLOB_RECURSE SOURCES "main.c" "1602a_lcd/*.*" "inc/*.*" "Ay38910a/*.*" "logger/*.*")
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
