@@ -22,23 +22,13 @@ pacman -S mingw-w64-x86_64-avr-binutils \
 
 # Build
 
-Create a json file called ```conf.json``` in the root directory of the project, with the following contents:
-
-```json
-{
-  "serial_port": "..."
-}
-```
-
-and specify the serial port where to find the device to program.
-If you attempt to configure the cmake build, 
-a stub for the conf.json file will be created automatically.
-
-Once you have the file in place, you can initialize the cmake project and start building/flashing.
-
 ```bash
 mkdir build && cd build
 cmake .. -B .
+
+# explicitly pass the mcu and prog string
+cmake .. -B . -DMCU=atmega644 -DAVRDUDE_PRG_STR=atmelice
+
 make
 make flash
 ```
