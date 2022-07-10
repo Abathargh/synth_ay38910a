@@ -3,14 +3,32 @@
 
 #define pin(port,pin) port,pin
 
-#define oc2a_pin     B,4
-#define bdir_pin     D,1
-#define bc1_pin      D,0
-#define ay_bus_port  A
+#if defined(__AVR_ATmega2560__)
 
-#define rs_pin       E,5
+#define oc2a_pin     B,4
+
+#define rs_pin        E,5
 #define en_pin       E,4
 #define lcd_bus      C
 #define pwm_ch0      B,7
+
+#elif defined(__AVR_ATmega644__)
+#define oc2a_pin     D,7
+
+#define rs_pin       C,7
+#define en_pin       C,6
+#define lcd_bus      A
+#define pwm_ch0      B,3
+
+#endif
+
+#define bdir_pin     C,7
+#define bc1_pin      C,6
+#define ay_bus_port  A
+
+
+/*
+
+*/
 
 #endif //AY3891_SYNTH_PINOUT_H
