@@ -1,63 +1,68 @@
-#include "Ay38910a.h"
-#include "1602a_lcd.h"
 #include <stdio.h>
-#include <avr/interrupt.h>
-
-#include "keyboard_ifc.h"
+#include "logger.h"
+#include "pin_config.h"
+#include "1602a_lcd.h"
 
 static char buf[32];
 #define WRITE_BUF(s, ...) snprintf(buf, 32, s, __VA_ARGS__)
 
-volatile uint8_t note = 20;
+#define pin_test A,0
 
-/*
- * TODO:
- *  - button test w debounce w and wo ISR (or better polling in timer)
- *  - adc acquisition w potentiometer w ISR
- *  - matrix keyboard
- *  - i2c w pcf8574
- *  - debug uart?
- * 	- application logic
- *  - settings in eeprom
- */
-
+void keyboard_acquire(void);
 
 int main(void)
 {
-	ay38910_init();
-
-	lcd1602a_init();
-	lcd1602a_display_on();
-	lcd1602a_home();
-	lcd1602a_clear();
-
-
-	ay38910_channel_mode(CHA_TONE_ENABLE);
-	ay38910_set_amplitude(CHANNEL_A, 0);
-
-	keyboard_init();
-	init_adc();
-
-	sei();
-
-	volatile uint16_t pot = get_potentiometer();
-	WRITE_BUF("Pot: %d", pot);
-	lcd1602a_print_row(buf, 0);
-
 	while(1)
-	{
-		volatile uint16_t new_pot = get_potentiometer();
-		int diff = new_pot - pot;
-		if(diff < -5 || diff > 5)
-		{
-			WRITE_BUF("Pot: %d", new_pot);
-			lcd1602a_print_row(buf, 0);
-			pot = new_pot;
-		}
-	}
-	
+  {
+    keyboard_acquire();
+  }
 }
 
+
+#define keyboard_port A
+#define row(n) A,(2+n)
+
+void keyboard_acquire()
+{
+  InitPort(keyboard_port, 0b00001100);
+  SetPort(keyboard_port,  0b00001111);
+
+  unsigned char columns;
+
+  logger_init(BAUD_RATE_9600);
+
+  /**
+   * x x x x o o i i input pullups
+   * 0 0 0 0 1 1 0 0
+   */
+  while(1)
+  {
+    columns = GetPort(keyboard_port) & 0x03;
+    while(columns == 0x03)
+    {
+      delay_ms(2);
+      columns = GetPort(keyboard_port);
+    }
+
+    for(int i = 0; i < 2; i++)
+    {
+      // ground one by one to check for key presses
+      ResetPin(row(i));
+      delay_ms(2);
+      columns = GetPort(keyboard_port) & 0x03;
+      
+      for(int j = 0; j < 2; j++)
+      {
+        if(!(columns & (1 << j)))
+        {
+          WRITE_BUF("%d %d\n", i, j);
+          logger_print(buf);
+        }
+      }
+      SetPin(row(i));
+    }
+  }
+}
 
 /*
 bool pressed = false;
