@@ -5,7 +5,8 @@
 #include <stdbool.h>
 
 void keyboard_init(void);
-bool is_pressed(void);
+bool keyboard_acquire(uint8_t *mask);
+
 void init_adc(void);
 uint8_t get_potentiometer(void);
 

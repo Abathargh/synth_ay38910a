@@ -1,54 +1,64 @@
 #include "keyboard_ifc.h"
-
-#include <avr/interrupt.h>
-#include <avr/io.h>
-
+#include "1602a_lcd.h"
 #include "pin_config.h"
 #include "pinout.h"
 
+#include <avr/interrupt.h>
+
 #define DEBOUNCE_MAX 8
+#define ROW(n) keyboard,(2+n)
 
-static volatile
-int button_debounce = 0;
-
-
-static void io_acquisition_timer(void);
-
-
-ISR(TIMER1_COMPA_vect)
-{
-	if(GetPin(button) && button_debounce < DEBOUNCE_MAX)
-	{
-		button_debounce++;
-	}
-
-	if(!GetPin(button) && button_debounce > 0)
-	{
-		button_debounce--;
-	}
-}
 
 void keyboard_init(void)
 {
-	InitInPin(button);
-	io_acquisition_timer();
+	InitPort(keyboard, 0b00001100);
+	SetPort(keyboard,  0b00001111);
 }
 
-bool is_pressed(void)
+bool keyboard_acquire(uint8_t *mask)
 {
-	return button_debounce == DEBOUNCE_MAX;
-}
+	uint8_t columns;
 
-static void io_acquisition_timer(void)
-{
-	OCR1A = 625;
+	/**
+		* x x x x o o i i input pullups
+		* 0 0 0 0 1 1 0 0
+		*/
 
-	TCCR1A = (0 << COM1A1) | (0 << COM1A0) | // Normal operation
-					 (1 << WGM11)  | (0 << WGM10);   // Normal mode
+	uint8_t cur_mask = 0;
 
-	TCCR1B = (0 << WGM12) |                            // No CTC
-					 (1 << CS12)  | (0 << CS11) | (0 << CS10); // f_clk/256 prescaler
+	columns = GetPort(keyboard) & 0x03;
+	while(columns == 0x03)
+	{
+		delay_ms(2);
+		columns = GetPort(keyboard);
+	}
 
-	// Enable the compare match interrupt for channel A
-	TIMSK1 = (1 << OCIE1A) | (0 << TOIE1);
+	for(int i = 0; i < 2; i++)
+	{
+		// ground one by one to check for key presses
+		ResetPin(ROW(i));
+		delay_ms(2);
+		columns = GetPort(keyboard) & 0x03;
+		
+		for(int j = 0; j < 2; j++)
+		{
+			if(!(columns & (1 << j)))
+			{
+				cur_mask |= 1 << (2*i + j);
+			}
+			else
+			{
+				cur_mask &= ~(1 << (2*i + j));
+			}
+		}
+		SetPin(ROW(i));
+	}
+
+	if(cur_mask != *mask)
+	{
+		// New key press
+		*mask = cur_mask;
+		return true;
+	}
+	return false;
 }
