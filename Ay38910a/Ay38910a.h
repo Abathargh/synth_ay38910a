@@ -59,21 +59,23 @@
 #define NOTE(N,OCTAVE) (((N + 12*(OCTAVE - 1)) % \
                           N_NOTES + N_NOTES) % N_NOTES)
 
+#define CHANNEL_NUM  3
+
 /************************************************************************/
 /* Typedefs                                                             */
 /************************************************************************/
 
 typedef enum {
-    CHANNEL_A = 0x00,
-    CHANNEL_B = 0x02,
-    CHANNEL_C = 0x04
+	CHANNEL_A = 0x00,
+	CHANNEL_B = 0x02,
+	CHANNEL_C = 0x04
 } Channel;
 
 typedef enum {
-    SHAPE_HOLD      = 0x01,
-    SHAPE_ALTERNATE = 0x02,
-    SHAPE_ATTACK    = 0x04,
-    SHAPE_CONTINUE  = 0x08
+	SHAPE_HOLD      = 0x01,
+	SHAPE_ALTERNATE = 0x02,
+	SHAPE_ATTACK    = 0x04,
+	SHAPE_CONTINUE  = 0x08
 } EnvelopeShape;
 
 /************************************************************************/
