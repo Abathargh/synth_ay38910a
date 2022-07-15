@@ -30,7 +30,7 @@
 #define bdir_pin     C,7
 #define bc1_pin      C,6
 
-#define potentiom    F,0
+// #define potentiom    A,0
 
 
 #endif //AY3891_SYNTH_PINOUT_H
