@@ -40,7 +40,7 @@ static uint16_t readings[NUM_CHANS] = {};
 
 void init_adc(void)
 {
-
+#if 0
 	InitInPin(potentiom);
 
 	ADMUX  = (1 << REFS1) | (1 << REFS0);  // Internal 1.1V Voltage reference, ADC0
@@ -49,6 +49,7 @@ void init_adc(void)
            (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // freq prescaling = 128
 	
 	ADCSRA |= (1 << ADSC);
+#endif
 }
 
 uint8_t get_potentiometer(void)
@@ -56,8 +57,10 @@ uint8_t get_potentiometer(void)
 	return readings[POT_CHAN];
 }
 
+#if 0
 ISR(ADC_vect)
 {
 	readings[ADMUX & 0x1F] = ADCL | (ADCH << 8);
 	ADCSRA |= (1 << ADSC);
 }
+#endif
