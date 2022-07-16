@@ -4,6 +4,11 @@ set(CMAKE_SYSTEM_NAME "Generic")
 set(CMAKE_GENERATOR "Unix Makefiles")
 project(ay38910a_synth C)
 
+# Default to Debug build
+if (NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Debug)
+endif()
+
 # Set the MCU
 if (NOT MCU)
   set(MCU "atmega644")
@@ -18,19 +23,33 @@ endif (NOT AVRDUDE_PRG_STR)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_COMPILER avr-gcc)
 set(CMAKE_ASM_COMPILER avr-gcc)
-set(GCC_FLAGS "-Wall -Wextra -Og -ggdb -DF_CPU=16000000 -mmcu=${MCU}")
+set(GCC_FLAGS "-Wall -Wextra -DF_CPU=16000000 -mmcu=${MCU}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_FLAGS}")
+add_compile_options(
+	$<$<CONFIG:DEBUG>:-Og> 
+	$<$<CONFIG:DEBUG>:-ggdb> 
+	$<$<CONFIG:RELEASE>:-O2> 
+)
 
 
+file(GLOB_RECURSE SOURCES
+	"main.c" 
+	"delay/*.*" 
+	"pinout/*.*" 
+	"logger/*.*" 
+	"Ay38910a/*.*" 
+	"1602a_lcd/*.*" 
+	"keyboard_ifc/*.*"
+)
 
-file(GLOB_RECURSE SOURCES "main.c" "1602a_lcd/*.*" "inc/*.*" "Ay38910a/*.*" "logger/*.*" "keyboard_ifc/*.*")
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
 
+target_include_directories(${PROJECT_NAME}.elf PRIVATE delay)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE pinout)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE logger)
 target_include_directories(${PROJECT_NAME}.elf PRIVATE Ay38910a)
 target_include_directories(${PROJECT_NAME}.elf PRIVATE 1602a_lcd)
 target_include_directories(${PROJECT_NAME}.elf PRIVATE keyboard_ifc)
-target_include_directories(${PROJECT_NAME}.elf PRIVATE logger)
-target_include_directories(${PROJECT_NAME}.elf PRIVATE inc)
 
 set_property(TARGET ${PROJECT_NAME}.elf
         APPEND

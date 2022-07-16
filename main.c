@@ -1,4 +1,4 @@
-#include "1602a_lcd.h"
+#include "delay.h"
 #include "Ay38910a.h"
 #include "keyboard_ifc.h"
 
@@ -11,15 +11,15 @@ int main(void)
 	
 	keyboard_init();
 
-	uint8_t mask = 0;
-	uint8_t octave = 4; // octave is fixed to 4 for testing purposes
+	uint16_t mask   = 0;
+	uint8_t  octave = 4; // octave is fixed to 4 for testing purposes
 	
 	while(1)
 	{
 		if(keyboard_acquire(&mask))
 		{
 			char count = 0;
-			for(uint8_t i = 0; (i < 8) && (count <= 3); i++)
+			for(uint8_t i = 0; (i < KEYBOARD_KEYS) && (count <= CHANNEL_NUM); i++)
 			{
 				if(mask & (1 << i))
 				{

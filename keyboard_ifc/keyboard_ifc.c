@@ -1,54 +1,55 @@
 #include "keyboard_ifc.h"
-#include "1602a_lcd.h"
-#include "pin_config.h"
+
+#include "delay.h"
 #include "pinout.h"
+#include "pin_config.h"
 
 #include <avr/interrupt.h>
 
-#define DEBOUNCE_MAX 8
-#define ROW(n) keyboard,(2+n)
+#define ROW_NUM 4
+#define COL_NUM 3
+
+#define ROW(n) keyboard_out,(2+n)
 
 
 void keyboard_init(void)
 {
-	InitPort(keyboard, 0b00001100);
-	SetPort(keyboard,  0b00001111);
+	InitPort(keyboard_out, 0x0F);
+
+	// Set the keyboard cols as pullup inputs
+	InitPort(keyboard_in, 0x07);
+	SetPort(keyboard_in, 0x03); 
+
+	SetPort(keyboard_out, 0x0F);
 }
 
-bool keyboard_acquire(uint8_t *mask)
+bool keyboard_acquire(uint16_t *mask)
 {
-	uint8_t columns;
-
-	/**
-		* x x x x o o i i input pullups
-		* 0 0 0 0 1 1 0 0
-		*/
-
 	uint8_t cur_mask = 0;
-
-	columns = GetPort(keyboard) & 0x03;
+	uint8_t columns = GetPort(keyboard_in) & 0x03;
+	
 	while(columns == 0x03)
 	{
 		delay_ms(2);
-		columns = GetPort(keyboard);
+		columns = GetPort(keyboard_in) & 0x03;
 	}
 
-	for(int i = 0; i < 2; i++)
+	for(int i = 0; i < ROW_NUM; i++)
 	{
 		// ground one by one to check for key presses
 		ResetPin(ROW(i));
 		delay_ms(2);
-		columns = GetPort(keyboard) & 0x03;
+		columns = GetPort(keyboard_in) & 0x03;
 		
-		for(int j = 0; j < 2; j++)
+		for(int j = 0; j < COL_NUM; j++)
 		{
 			if(!(columns & (1 << j)))
 			{
-				cur_mask |= 1 << (2*i + j);
+				cur_mask |= 1 << ((ROW_NUM-1)*i + j);
 			}
 			else
 			{
-				cur_mask &= ~(1 << (2*i + j));
+				cur_mask &= ~(1 << ((ROW_NUM-1)*i + j));
 			}
 		}
 		SetPin(ROW(i));

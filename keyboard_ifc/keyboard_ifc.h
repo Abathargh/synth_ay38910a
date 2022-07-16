@@ -4,8 +4,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define KEYBOARD_KEYS 12
+
 void keyboard_init(void);
-bool keyboard_acquire(uint8_t *mask);
+bool keyboard_acquire(uint16_t *mask);
 
 void init_adc(void);
 uint8_t get_potentiometer(void);

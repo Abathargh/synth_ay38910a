@@ -20,8 +20,10 @@
 /************************************************************************/
 
 #include "1602a_lcd.h"
-#include "pin_config.h"
+
+#include "delay.h"
 #include "pinout.h"
+#include "pin_config.h"
 
 #include <string.h>
 
@@ -76,7 +78,7 @@ void lcd1602a_init(void)
 {
 	InitOutPin(rs_pin);
 	InitOutPin(en_pin);
-	InitPort(lcd_bus, 0x0F);
+	InitOrPort(lcd_bus, 0x0F);
 
 	// Pull the rs pin down and wait for
 	// more than 40ms at init time
@@ -264,78 +266,4 @@ static void init_contrast(void)
 
 	TCCR1A = (1 << COM1A1) | (0 << COM1A0) | (1 << WGM11) | (1 << WGM10);
 	TCCR1B = (0 << WGM12)  | (0 << CS12)   | (0 << CS11)  | (1 << CS10);
-}
-
-/**
- * Performs a blocking delay with a microsecond granularity
- * @param us the number of microseconds to wait
- */
-inline __attribute__((always_inline))
-void delay_us(uint16_t us)
-{
-	// The small error is due to using a 16 bit input
-	// T_del = 	T_clk * #cycles = (n + 0,0625) us
-	asm volatile(
-		"MOV ZH,%B0\n\t"  // MOV: 1 cycle
-		"MOV ZL,%A0\n\t"  // MOV: 1 cycle
- 		"%=:\n\t"         // 16 cycles (last BRNE = 1 evens out with MOV)
- 		"NOP\n\t"
- 		"NOP\n\t"
- 		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"SBIW Z,1\n\t"
-		"BRNE %=b\n\t"
-		:
-		: "r" (us)
-	);
-}
-
-/**
- * Performs a blocking delay with a millisecond granularity
- * @param ms the number of milliseconds to wait.
- */
-inline __attribute__((always_inline))
-void delay_ms(uint16_t ms)
-{
-	/*TODO inform the compiler via clobber that the registers are used and check
-	 * if it works refer to inline assembly guide optimization => try to remove
-	 * MOVs since R25:R24 should be used as first input register
-	 */
-	 asm volatile(
-		"MOV ZH,%B0\n\t"  // MOV: 1 cycle
-		"MOV ZL,%A0\n\t"  // MOV: 1 cycle => 1 + (16016 + 4) * ms = 16020 * ms + 1
-		"OUTER%=:\n\t"    // (4000 + 4) * 4 = 16016
-		"LDI R18,4\n\t"   // LDI: 1 cycle
-		"MILLISEC%=:\n\t" // 16 * 250 = 4000 cycles
-		"LDI R17,250\n\t" // LDI: 1 cycle
-		"MICROSEC%=:\n\t" // MICROSEC LOOP: 16 cycles tot (including previous LDI per cycle)
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"NOP\n\t"
-		"DEC R17\n\t"
-		"BRNE MICROSEC%=\n\t"
-		"DEC R18\n\t"
-		"BRNE MILLISEC%=\n\t"
-		"SBIW Z,1\n\t"        // SBIW: 2 cycles
-		"BRNE OUTER%=\n\t"
-		:
-		: "r" (ms)
-	);
 }

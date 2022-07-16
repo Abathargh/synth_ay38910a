@@ -21,7 +21,8 @@
 
 #define INIT_OUT_PORT(PRT)      ((DDR ## PRT)  = 0xFF)
 #define INIT_IN_PORT(PRT)       ((DDR ## PRT)  = 0x00)
-#define INIT_PORT(PRT,DATA)     ((DDR ## PRT) |= DATA)
+#define INIT_PORT(PRT,DATA)     ((DDR ## PRT)  = DATA)
+#define INIT_OR_PORT(PRT,DATA)  ((DDR ## PRT) |= DATA)
 #define INIT_PULL_PORT(PRT,PIN) ((PORT ## PRT) = 0xFF)
 
 #define SET_PORT(PRT,DATA)      ((PORT ## PRT) = DATA)
@@ -39,6 +40,7 @@
 #define InitOutPort(PORT)       INIT_OUT_PORT(PORT)
 #define InitInPort(PORT)        INIT_IN_PORT(PORT)
 #define InitPort(PORT,DATA)     INIT_PORT(PORT,DATA)
+#define InitOrPort(PORT,DATA)   INIT_OR_PORT(PORT,DATA)
 #define InitPullPort(PORT)      INIT_PULL_PORT(PORT)
 
 #define SetPort(PORT,DATA)      SET_PORT(PORT,DATA)
