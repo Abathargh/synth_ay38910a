@@ -76,7 +76,7 @@ void lcd1602a_init(void)
 {
 	InitOutPin(rs_pin);
 	InitOutPin(en_pin);
-	InitOutPort(lcd_bus);
+	InitPort(lcd_bus, 0x0F);
 
 	// Pull the rs pin down and wait for
 	// more than 40ms at init time
@@ -260,10 +260,10 @@ static void init_contrast(void)
 
 	// N.B. if using 2 rows, you need a higher V for the same
 	// contrast level
-	OCR0A = CONTRAST_DT;
+	OCR1A = CONTRAST_DT;
 
-	TCCR0A = (1 << COM0A1) | (0 << COM0A0) | (1 << WGM01) | (1 << WGM00);
-	TCCR0B = (0 << WGM02)  | (0 << CS02)   | (0 << CS01)  | (1 << CS00);
+	TCCR1A = (1 << COM1A1) | (0 << COM1A0) | (1 << WGM11) | (1 << WGM10);
+	TCCR1B = (0 << WGM12)  | (0 << CS12)   | (0 << CS11)  | (1 << CS10);
 }
 
 /**
