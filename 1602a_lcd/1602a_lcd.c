@@ -22,6 +22,7 @@
 #include "1602a_lcd.h"
 
 #include "delay.h"
+#include "delay.h"
 #include "pinout.h"
 #include "pin_config.h"
 
@@ -31,7 +32,7 @@
 /* Defines                                                              */
 /************************************************************************/
 
-#define CONTRAST_DT 95
+#define CONTRAST_DT 220
 
 #define NUM_ROWS    2
 #define NUM_COLS    16
@@ -78,7 +79,7 @@ void lcd1602a_init(void)
 {
 	InitOutPin(rs_pin);
 	InitOutPin(en_pin);
-	InitOrPort(lcd_bus, 0x0F);
+	InitOrPort(lcd_bus, 0xF0);
 
 	// Pull the rs pin down and wait for
 	// more than 40ms at init time
@@ -86,22 +87,22 @@ void lcd1602a_init(void)
 	delay_ms(2000);
 
 	// Set the interface to 8-bit waiting > 4.1 ms
-	SetPort(lcd_bus, FUNCTION_SET_8B1L);
+	SetHiPort(lcd_bus, FUNCTION_SET_8B1L);
 	forward_data();
 	delay_ms(16);
 
 	// Set the interface to 8-bit waiting > 100 us
-	SetPort(lcd_bus, FUNCTION_SET_8B1L);
+	SetHiPort(lcd_bus, FUNCTION_SET_8B1L);
 	forward_data();
 	delay_us(400);
 
 	// Set the interface to 8-bit waiting > 100 us
-	SetPort(lcd_bus, FUNCTION_SET_8B1L);
+	SetHiPort(lcd_bus, FUNCTION_SET_8B1L);
 	forward_data();
 	delay_us(400);
 
 	// Set the interface to 4-bit 1 line waiting > 100 us
-	SetPort(lcd_bus, FUNCTION_SET_4B1L);
+	SetHiPort(lcd_bus, FUNCTION_SET_4B1L);
 	forward_data();
 	delay_us(160);
 
@@ -180,10 +181,10 @@ void lcd1602a_putchar(unsigned char c)
 {
 	SetPin(rs_pin);
 
-	SetPort(lcd_bus, c & 0xf0);
+	SetHiPort(lcd_bus, c & 0xf0);
 	forward_data();
 
-	SetPort(lcd_bus, (c << 4) & 0xf0);
+	SetHiPort(lcd_bus, (c << 4) & 0xf0);
 	forward_data();
 
 	delay_us(2000);
@@ -231,10 +232,10 @@ static void send_command(unsigned char cmd)
 {
 	ResetPin(rs_pin);
 
-	SetPort(lcd_bus, cmd & 0xf0);
+	SetHiPort(lcd_bus, cmd & 0xf0);
 	forward_data();
 
-	SetPort(lcd_bus, (cmd << 4) & 0xf0);
+	SetHiPort(lcd_bus, (cmd << 4) & 0xf0);
 	forward_data();
 
 	delay_us(2000);
