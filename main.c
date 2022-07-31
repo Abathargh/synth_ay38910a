@@ -5,15 +5,26 @@
 
 #include <stdint.h>
 
+/* WRITE_BUF for easy printf-like debug through the lcd */
+#include <stdio.h>
+
+char buf[32];
+#define WRITE_BUF(s, ...) snprintf(buf, 32, s, __VA_ARGS__)
+
+
+
 int main(void)
 {
 	ay38910_init();
-	ay38910_channel_mode(CHA_TONE_ENABLE | CHB_TONE_ENABLE | CHC_TONE_ENABLE);
-
+	lcd1602a_init();
 	keyboard_init();
 
+	lcd1602a_display_on();
+	lcd1602a_clear();
+	lcd1602a_home();
+
 	uint16_t mask   = 0;
-	uint8_t  octave = 2; // octave is fixed to 4 for testing purposes
+	uint8_t  octave = 5; // octave is fixed to 5 for testing purposes
 	uint8_t  channel_mask = 0;
 	
 	while(1)
@@ -35,7 +46,7 @@ int main(void)
 				}
 			}
 			
-			// for is called anyways 
+			// this for is called anyways even if no new closed 
 			// close unused channels due to a key not being pressed anymore
 			for(uint8_t ch = count ; ch < CHANNEL_NUM; ch++)
 			{
@@ -44,6 +55,8 @@ int main(void)
 				ay38910_channel_mode(channel_mask);
 				ay38910_set_amplitude(chan, 0);
 			}
+			WRITE_BUF("%x", mask);
+			lcd1602a_print_row(buf, 0);
 		}
 		delay_ms(2);
 	}
