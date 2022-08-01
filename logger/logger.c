@@ -30,6 +30,15 @@
 
 #endif
 
+/**
+ * Generic register macros used as a general approach
+ * to selecting the available registers depending on 
+ * MCU currently selected as the target.
+ *
+ * These can be overridden to use a specifict USART 
+ * register by defining the 'LOGGER_PORT' macro.
+ *
+ */
 
 #define __UBRRH(x) UBRR ## x ## H
 #define __UBRRL(x) UBRR ## x ## L
@@ -72,7 +81,11 @@
 /* Function implementations                                             */
 /************************************************************************/
 
-
+/**
+ * @brief Initializes the USART perpipheral used by the logger module
+ * 
+ * @param baud one of the supported baud rates
+ */
 void logger_init(baudrate_t baud)
 {
   UBRRH = (uint8_t)(baud >> 8); 
@@ -83,6 +96,12 @@ void logger_init(baudrate_t baud)
   UCSRC = (1 << UCSZ2) | (1 << UCSZ1) | (1 << UCSZ0);  
 }
 
+
+/**
+ * @brief Prints a message through the initialized USART
+ * 
+ * @param msg the biffer containing the message
+ */
 void logger_print(const char *msg)
 {
   while(*msg)
