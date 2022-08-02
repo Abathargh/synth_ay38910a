@@ -1,3 +1,15 @@
+/**
+ * keyboard_ifc.c
+ *
+ * This module implements the keyboard interface logic.
+ *
+ * Author: mar
+ */
+
+/************************************************************************/
+/* Includes                                                             */
+/************************************************************************/
+
 #include "keyboard_ifc.h"
 
 #include "delay.h"
@@ -5,6 +17,10 @@
 #include "pin_config.h"
 
 #include <avr/interrupt.h>
+
+/************************************************************************/
+/* Defines                                                              */
+/************************************************************************/
 
 #define ROW_NUM 4
 #define COL_NUM 3
@@ -15,6 +31,14 @@
 #define ROW(n) keyboard_out,n
 
 
+/************************************************************************/
+/* Function implementations                                             */
+/************************************************************************/
+
+/**
+ * Initializes the keyboard matrix peripheral
+ * 
+ */
 void keyboard_init(void)
 {
 	InitOrPort(keyboard_out, ROW_MASK);
@@ -24,6 +48,19 @@ void keyboard_init(void)
 	SetLoPort(keyboard_in, COL_MASK);
 }
 
+/**
+ * Keyboard acquisition matrix sampling routine.
+ * The pressed buttons are coded into a mask that has
+ * the ith bit set to 1 if the ith key is pressed.
+ *  
+ * The mask pointer argument that is passed acts as 
+ * the old mask from the last iteration, and the new 
+ * mask if a different combination of keys was pressed.
+ * 
+ * @param mask the old mask, modified on key changes.
+ * @return true a new key combination was detected
+ * @return false same key combination was detected
+ */
 bool keyboard_acquire(uint16_t *mask)
 {
 	uint16_t cur_mask = 0;
