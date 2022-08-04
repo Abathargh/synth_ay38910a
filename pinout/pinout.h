@@ -36,6 +36,8 @@
 
 /* Navigation inputs connections */
 
+#define browse         D,4
+#define confirm        D,6
 #define potentiometer  A,3
 
 #endif

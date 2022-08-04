@@ -82,7 +82,7 @@
 /************************************************************************/
 
 /**
- * @brief Initializes the USART perpipheral used by the logger module
+ * Initializes the USART perpipheral used by the logger module
  * 
  * @param baud one of the supported baud rates
  */
@@ -98,7 +98,7 @@ void logger_init(baudrate_t baud)
 
 
 /**
- * @brief Prints a message through the initialized USART
+ * Prints a message through the initialized USART
  * 
  * @param msg the biffer containing the message
  */
