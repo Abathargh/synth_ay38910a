@@ -8,8 +8,13 @@
 
 void keyboard_init(void);
 bool keyboard_acquire(uint16_t *mask);
+bool keyboard_get_browse(void);
+bool keyboard_get_confirm(void);
 
-void init_adc(void);
-uint8_t get_potentiometer(void);
 
-#endif //AY38910A_SYNTH_KEYBOARD_IFC_H
+void keyboard_init_adc(void);
+void keyboard_enable_potentiometer(void);
+void keyboard_disable_potentiometer(void);
+uint8_t keyboard_get_potentiometer(void);
+
+#endif
