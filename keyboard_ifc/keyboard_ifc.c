@@ -140,12 +140,20 @@ bool keyboard_acquire(uint16_t *mask)
 	return false;
 }
 
+/**
+ * Returns the last reading from the debounced browse key
+ * 
+ */
 inline __attribute__((always_inline))
 bool keyboard_get_browse(void)
 {
 	return browse_debounce == DEBOUNCE_MAX;
 }
 
+/**
+ * Returns the last reading from the debounced confirm key
+ * 
+ */
 inline __attribute__((always_inline))
 bool keyboard_get_confirm(void)
 {
