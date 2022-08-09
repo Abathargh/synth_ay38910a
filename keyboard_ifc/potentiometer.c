@@ -1,7 +1,7 @@
 
 /**
  * potentiometer.c
- * 
+ * TODO in comment docs
  */
 
 /************************************************************************/
@@ -37,7 +37,10 @@ static volatile uint8_t pot_data = 0;
 /* Function implementations                                             */
 /************************************************************************/
 
-
+/**
+ * Initializes the adc for the keyboard potentiometer 
+ * 
+ */
 void keyboard_init_adc(void)
 {
 	InitInPin(potentiometer);
@@ -51,16 +54,30 @@ void keyboard_init_adc(void)
 	ADCSRA |= (1 << ADSC);
 }
 
+/**
+ * Enables the adc peripheral to acquire data from the 
+ * potentiometer
+ * 
+ */
 void keyboard_enable_potentiometer(void)
 {
 	ADCSRA |= (1 << ADEN);
 }
 
+/**
+ * Disables the adc peripheral to acquire data from the 
+ * potentiometer
+ *
+ */
 void keyboard_disable_potentiometer(void)
 {
 	ADCSRA &= ~(1 << ADEN);
 }
 
+/**
+ * Gets the latest potentiometer adc sample
+ * 
+ */
 inline __attribute__((always_inline))
 uint8_t keyboard_get_potentiometer(void)
 {
