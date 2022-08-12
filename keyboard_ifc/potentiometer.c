@@ -1,7 +1,10 @@
-
 /**
  * potentiometer.c
- * TODO in comment docs
+ * 
+ * This module handles the potentiometer sampling.
+ * The adc can be enabled by thekeyboard_en/disable APIs; once it is 
+ * active, it continously samples the potentiometer. The most recent 
+ * value can be obtained by calling keyboard_get_potentiometer.
  */
 
 /************************************************************************/
@@ -39,16 +42,15 @@ static volatile uint8_t pot_data = 0;
 
 /**
  * Initializes the adc for the keyboard potentiometer 
- * 
  */
 void keyboard_init_adc(void)
 {
 	InitInPin(potentiometer);
 
-	ADMUX  = (1 << REFS1) | (1 << REFS0) |  // Internal 1.1V Voltage reference, ADC0
-	         (1 << ADLAR);                  // Left adjust the conversion result
-	ADCSRA = (1 << ADIE)  |                 // Enable ADC in interrupt mode
-	         (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // freq prescaling = 128
+	ADMUX  = (1 << REFS1) | (1 << REFS0) |  // Internal 1.1V ref, ADC0
+	         (1 << ADLAR);                  // Left adjust the result
+	ADCSRA = (1 << ADIE)  |                 // Interrupt mode
+	         (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // 128-prescaling
 	
 	ADMUX  |= (POT_CHAN);
 	ADCSRA |= (1 << ADSC);
@@ -57,7 +59,6 @@ void keyboard_init_adc(void)
 /**
  * Enables the adc peripheral to acquire data from the 
  * potentiometer
- * 
  */
 void keyboard_enable_potentiometer(void)
 {
@@ -67,7 +68,6 @@ void keyboard_enable_potentiometer(void)
 /**
  * Disables the adc peripheral to acquire data from the 
  * potentiometer
- *
  */
 void keyboard_disable_potentiometer(void)
 {
@@ -76,7 +76,6 @@ void keyboard_disable_potentiometer(void)
 
 /**
  * Gets the latest potentiometer adc sample
- * 
  */
 inline __attribute__((always_inline))
 uint8_t keyboard_get_potentiometer(void)
