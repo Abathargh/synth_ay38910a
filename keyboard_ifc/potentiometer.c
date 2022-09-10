@@ -83,6 +83,7 @@ uint8_t keyboard_get_potentiometer(void)
 	return pot_data;
 }
 
+// TODO acquire in 16 bit mode and mask it? envelope frequency needs 16bit
 ISR(ADC_vect)
 {
 	// with left adjustment this register contains ADC[2:9]

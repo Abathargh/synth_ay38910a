@@ -14,9 +14,10 @@ char buf[32];
 
 enum menu_selection {
 	OCTAVE_MENU,
-	ENVELOPE_FINE_MENU,
-	ENVELOPE_COARSE_MENU,
-	ENVELOPE_SHAPE_MENU,
+	ENVELOPE_HOLD_MENU,
+	ENVELOPE_ALTERNATE_MENU,
+	ENVELOPE_ATTACK_MENU,
+	ENVELOPE_CONTINUE_MENU,
 	CHAN_A_TONE_MENU,
 	CHAN_B_TONE_MENU,
 	CHAN_C_TONE_MENU,
@@ -27,23 +28,26 @@ enum menu_selection {
 
 static const uint8_t sample_levels[] = {
 	[OCTAVE_MENU] = 8,
-	[ENVELOPE_FINE_MENU] = 1,
-	[ENVELOPE_COARSE_MENU] = 1,
-	[ENVELOPE_SHAPE_MENU] = 1,
+	[ENVELOPE_HOLD_MENU] = 1,
+	[ENVELOPE_ALTERNATE_MENU] = 1,
+	[ENVELOPE_ATTACK_MENU] = 1,
+	[ENVELOPE_CONTINUE_MENU] = 1,
 	[CHAN_A_TONE_MENU] = 2,
 	[CHAN_B_TONE_MENU] = 2,
 	[CHAN_C_TONE_MENU] = 2,
 };
 
-
-static const char* messages[] = {
+// TODO move to module, num cols, rows in .h to expose them
+// TODO frequency maybe 0 disable env non zeroe enable with that freq? but 16 bit..
+static const char messages[][16] = {
 		[OCTAVE_MENU] = "Octave:",
-		[ENVELOPE_FINE_MENU] = "Fine envelope:",
-		[ENVELOPE_COARSE_MENU] = "Coarse envelope:",
-		[ENVELOPE_SHAPE_MENU] = "Shape envelope:",
-		[CHAN_A_TONE_MENU] = "ChanA tone/noise:",
-		[CHAN_B_TONE_MENU] = "ChanB tone/noise:",
-		[CHAN_C_TONE_MENU] = "ChanC tone/noise:",
+		[ENVELOPE_HOLD_MENU] = "Hold envelope:",
+		[ENVELOPE_ALTERNATE_MENU] = "Alt. envelope:",
+		[ENVELOPE_ATTACK_MENU] = "Attack envelope:",
+		[ENVELOPE_CONTINUE_MENU] = "Cont. envelope:",
+		[CHAN_A_TONE_MENU] = "Channel A tone:",
+		[CHAN_B_TONE_MENU] = "Channel B tone:",
+		[CHAN_C_TONE_MENU] = "Channel C tone:",
 		[RESET_MENU] = "Reset defaults",
 		[EXIT_MENU] = "Exit",
 };
@@ -194,11 +198,13 @@ void handle_menu(bool *play_state, struct keyboard_config *conf)
 			lcd1602a_print_row(row1_buf, 1);
 			break;
 
-		case ENVELOPE_FINE_MENU:
-		case ENVELOPE_COARSE_MENU:
-		case ENVELOPE_SHAPE_MENU:
+		case ENVELOPE_HOLD_MENU:
+		case ENVELOPE_ALTERNATE_MENU:
+		case ENVELOPE_ATTACK_MENU:
+		case ENVELOPE_CONTINUE_MENU:
 			// catch all the three cases
-			conf->envelope_level[menu_state-ENVELOPE_FINE_MENU] = pot_value;
+			// TODO actuate envelope
+			conf->envelope_level[menu_state-ENVELOPE_HOLD_MENU] = pot_value;
 			uint8_to_str(pot_value, row1_buf, sizeof(row1_buf));
 			lcd1602a_print_row(row1_buf, 1);
 			break;
@@ -209,12 +215,7 @@ void handle_menu(bool *play_state, struct keyboard_config *conf)
 			// catch all the three cases
 			// TODO cleanup magic nums
 			conf->tone_config[menu_state-CHAN_A_TONE_MENU] = pot_levels;
-			if(pot_levels)
-			{
-				lcd1602a_print_row(tone_messages[0], 1);
-				return;
-			}
-			lcd1602a_print_row(tone_messages[1], 1);
+			lcd1602a_print_row(tone_messages[pot_levels ? 0 : 1], 1);
 			break;
 
 		default:

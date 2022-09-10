@@ -55,11 +55,14 @@ void delay_us(uint16_t us)
 inline __attribute__((always_inline))
 void delay_ms(uint16_t ms)
 {
-	/*TODO inform the compiler via clobber that the registers are used and check
+	/**
+	 * TODO inform the compiler via clobber that the registers are used and check
 	 * if it works refer to inline assembly guide optimization => try to remove
 	 * MOVs since R25:R24 should be used as first input register
 	 */
-	 asm volatile(
+	// TODO change with info on ms delay T_del = 	T_clk * #cycles = (n + 0,0625) us
+	
+	asm volatile(
 		"MOV ZH,%B0\n\t"  // MOV: 1 cycle
 		"MOV ZL,%A0\n\t"  // MOV: 1 cycle => 1 + (16016 + 4) * ms = 16020 * ms + 1
 		"OUTER%=:\n\t"    // (4000 + 4) * 4 = 16016

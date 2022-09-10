@@ -7,8 +7,6 @@
  *   - a 2MHz clock signal to use as the PSG input
  *   - interfacing with the AY38910A address/data bus using PORTA
  *   - interfacing with the AY38910A bus control line using PORTC[0:2]
- *
- * Author: mar
  */
 
 /************************************************************************/

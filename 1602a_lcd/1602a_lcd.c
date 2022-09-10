@@ -208,6 +208,7 @@ void lcd1602a_print(const char *str)
 void lcd1602a_print_row(const char *str, uint8_t row)
 {
 	// TODO maybe an option to clear only if the user wants
+	// TODO strlen heavy, maybe change api and pass len?
 	size_t len = strlen(str);
 	size_t idx = 0;
 
