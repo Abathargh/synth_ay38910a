@@ -22,7 +22,6 @@
 #include "1602a_lcd.h"
 
 #include "delay.h"
-#include "delay.h"
 #include "pinout.h"
 #include "pin_config.h"
 

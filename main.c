@@ -8,6 +8,8 @@
 /* WRITE_BUF for easy printf-like debug through the lcd */
 #include <stdio.h>
 
+#include <avr/interrupt.h>
+
 
 char buf[32];
 #define WRITE_BUF(s, ...) snprintf(buf, 32, s, __VA_ARGS__)
@@ -93,6 +95,7 @@ int main(void)
 	struct keyboard_config config = {0};
 	config.octave = 5;
 
+	sei();
 
 	while(1)
 	{
