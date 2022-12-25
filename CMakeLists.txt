@@ -33,41 +33,44 @@ add_compile_options(
 
 
 file(GLOB_RECURSE SOURCES
-	"main.c" 
-	"delay/*.*" 
-	"pinout/*.*" 
-	"logger/*.*" 
-	"Ay38910a/*.*" 
-	"1602a_lcd/*.*" 
-	"keyboard_ifc/*.*"
+	"main.c"
+	"src/*.*"
 )
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES})
 
-target_include_directories(${PROJECT_NAME}.elf PRIVATE delay)
-target_include_directories(${PROJECT_NAME}.elf PRIVATE pinout)
-target_include_directories(${PROJECT_NAME}.elf PRIVATE logger)
-target_include_directories(${PROJECT_NAME}.elf PRIVATE Ay38910a)
-target_include_directories(${PROJECT_NAME}.elf PRIVATE 1602a_lcd)
-target_include_directories(${PROJECT_NAME}.elf PRIVATE keyboard_ifc)
+target_include_directories(${PROJECT_NAME}.elf PRIVATE inc)
 
 set_property(TARGET ${PROJECT_NAME}.elf
-        APPEND
-        PROPERTY ADDITIONAL_CLEAN_FILES ${PROJECT_NAME}.hex ${PROJECT_NAME}.bin
+	APPEND
+	PROPERTY ADDITIONAL_CLEAN_FILES ${PROJECT_NAME}.hex ${PROJECT_NAME}.bin
 )
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf
-        POST_BUILD
-        COMMAND avr-objcopy -j .text -j .data -O ihex ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
-        COMMAND avr-objcopy -j .text -j .data -O binary ${PROJECT_NAME}.elf ${PROJECT_NAME}.bin
+	POST_BUILD
+	COMMAND avr-objcopy -j .text -j .data -O ihex ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
+	COMMAND avr-objcopy -j .text -j .data -O binary ${PROJECT_NAME}.elf ${PROJECT_NAME}.bin
 )
 
 add_custom_target(flash
-        COMMAND avrdude -c ${AVRDUDE_PRG_STR} -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
-        COMMENT "flashes the hex file onto the MCU"
+	COMMAND avrdude -c ${AVRDUDE_PRG_STR} -p ${MCU} -U flash:w:${PROJECT_NAME}.hex:i
+	COMMENT "flashes the hex file onto the MCU"
 )
 
 add_custom_target(flash-debug
-        COMMAND avrdude -c ${AVRDUDE_PRG_STR} -p ${MCU} -U flash:w:${PROJECT_NAME}.elf:e
-        COMMENT "flashes the elf file onto the MCU"
+	COMMAND avrdude -c ${AVRDUDE_PRG_STR} -p ${MCU} -U flash:w:${PROJECT_NAME}.elf:e
+	COMMENT "flashes the elf file onto the MCU"
+)
+
+add_custom_target(docs
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	COMMAND doxygen
+	COMMAND mkdir -p docs && mv html/* docs/ && rm -r html
+	COMMENT "generates documentation from the comments using doxygen"
+)
+
+add_custom_target(clean-docs
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+	COMMAND rm -rf docs
+	COMMENT "cleans up the generated documentation"
 )

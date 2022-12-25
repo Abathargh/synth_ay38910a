@@ -13,7 +13,7 @@
 /* Includes                                                             */
 /************************************************************************/
 
-#include "Ay38910a.h"
+#include "ay38910a.h"
 #include "pin_config.h"
 #include "pinout.h"
 

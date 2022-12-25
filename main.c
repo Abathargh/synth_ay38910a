@@ -1,6 +1,6 @@
-#include "1602a_lcd.h"
+#include "lcd_1602a.h"
 #include "delay.h"
-#include "Ay38910a.h"
+#include "ay38910a.h"
 #include "keyboard_ifc.h"
 
 #include <stdint.h>

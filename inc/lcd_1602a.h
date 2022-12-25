@@ -1,5 +1,5 @@
-#ifndef AY38910A_SYNTH_1602A_LCD_H
-#define AY38910A_SYNTH_1602A_LCD_H
+#ifndef AY38910A_SYNTH_LCD_1602A_H
+#define AY38910A_SYNTH_LCD_1602A_H
 
 /************************************************************************/
 /* Includes                                                             */

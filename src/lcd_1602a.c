@@ -19,7 +19,7 @@
 /* Includes                                                             */
 /************************************************************************/
 
-#include "1602a_lcd.h"
+#include "lcd_1602a.h"
 
 #include "delay.h"
 #include "pinout.h"
