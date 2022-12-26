@@ -1,9 +1,9 @@
 # Ay38910a Synth
 
-A synth based on the AY38910a programmable sound generator chip, implemented on an 
-ATMega-based system.
+A synth based on the AY38910a programmable sound generator chip, implemented using an megaAVR ATMega microcontroller
+(currently tested with an ATMega644 standalone system and on an Arduino Mega).
 
-## Pre-req
+## Pre-reqs
 
 ### Debian-like
 
@@ -20,7 +20,7 @@ pacman -S mingw-w64-x86_64-avr-binutils \
           mingw-w64-x86_64-avrdude
 ```
 
-# Build
+## Build
 
 ```bash
 mkdir build && cd build
@@ -31,4 +31,8 @@ cmake .. -B . -DMCU=atmega644 -DAVRDUDE_PRG_STR=atmelice
 
 make
 make flash
+make flash-debug
+
+make docs
+make clean-docs
 ```
