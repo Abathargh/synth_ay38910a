@@ -211,11 +211,19 @@ void ay38910_channel_mode(uint8_t mode);
 void ay38910_set_amplitude(channel_t chan, uint8_t amplitude);
 
 /**
- * @brief Sets the envelope shape and frequency
+ * @brief Sets the envelope shape function bits and scales its frequency
+ *
+ * Sets the function bits for the envelope generator and scales the frequency
+ * of the envelope by a specific factor.
+ *
+ * The final frequency of the envelope is calculated by taking the input clock,
+ * scaling it by a factor of 256, and then scaling it again by a 16-bit value
+ * that is passed by the user. This implies that the range of frequencies that
+ * can be applied is 0.12-7.8k Hz.
  *
  * @param shape the shape of the envelop to enable
  * @param frequency the frequency of the envelope
  */
-void ay38910_set_envelope(envelope_func_t shape, uint16_t frequency);
+void ay38910_set_envelope(envelope_func_t shape, uint16_t scaling);
 
 #endif /* AY38910A_H_ */
