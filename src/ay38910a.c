@@ -1,14 +1,3 @@
-/**
- * Ay38910a.c
- *
- * This module implements the a low level driver for the AY38910A
- * Programmable sound Generator Chip. This is achieved by
- * implementing the following features:
- *   - a 2MHz clock signal to use as the PSG input
- *   - interfacing with the AY38910A address/data bus using PORTA
- *   - interfacing with the AY38910A bus control line using PORTC[0:2]
- */
-
 /************************************************************************/
 /* Includes                                                             */
 /************************************************************************/
@@ -16,6 +5,8 @@
 #include "ay38910a.h"
 #include "pin_config.h"
 #include "pinout.h"
+
+#include <assert.h>
 
 /************************************************************************/
 /* Defines                                                              */
@@ -32,38 +23,31 @@
 #define CHAN_TO_AMP_REG(c) (((uint8_t)c / 2) + 8)
 
 /**
+ * Setting up the clock signal
+ * -----------------------------------------------------------------
  * We want to generate a 2MHz square wave as the input signal for
  * the clock pin of the AY38910A. Consider the following:
- *
- * f_clk = 16 MHz => T_clk = 0.0625 us
+ *   f_clk = 16 MHz
+ *   T_clk = 0.0625 us
  *
  * and knowing that:
+ *   f_desired = 2MHz
+ *   T_desired = 0.5 us
  *
- * f_desired 2MHz => T_desired = 0.5 us
+ * we know that we have to generate a signal that peaks every:
+ *   T_desired/2 = T_del = 0.25 us
+ *   OCRxx = T_del/T_clk - 1 = (0.25 us / 0.0625 us) - 1 = 3
  *
- * we know that we have to generate a signal that peaks every
- * T_desired/2, so T_del = 0.25 us
- *
- * OCRxx = T_del/T_clk - 1 = (0.25 us / 0.0625 us) - 1 = 3
- *
- * In general, if F_CPU is defined and known in advance, the value 
- * for the output compare register can be obtained with the following 
+ * In general, if F_CPU is defined and known in advance, the value
+ * for the output compare register can be obtained with the following
  * formula:
- *
- * OCRxx = (F_CPU/(2*F_TIM)) - 1 
- *
+ *   OCRxx = (F_CPU/(2*F_TIM)) - 1
  */
-
 #if defined(F_CPU)
-
 #define F_TIM        2000000
-#define AY_CLK_OCR   (F_CPU/(2*F_TIM)) - 1
-
+#define AY_CLK_OCR   ((F_CPU/(2*F_TIM)) - 1)
 #else
-
-// Fallback on the value with a 16MHz clock if F_CPU is not defined
-#define AY_CLK_OCR   3
-
+#define AY_CLK_OCR   3 /* Fallback: 16MHz if F_CPU is not defined */
 #endif
 
 /************************************************************************/
@@ -116,9 +100,6 @@ static const unsigned int magic_notes[] = {
 /* Function implementations                                             */
 /************************************************************************/
 
-/**
- * Initializes the ay38910a module
- */
 void ay38910_init()
 {
 	InitOutPin(bc1_pin);
@@ -127,60 +108,29 @@ void ay38910_init()
 	oc2a_pin_config();
 }
 
-/**
- * Plays a note on the specified channel
- *
- * @param chan the channel to program
- * @param note the note to play depending on the internal mapping (0 off)
- */
-void ay38910_play_note(Channel chan, uint8_t note)
+void ay38910_play_note(channel_t chan, uint8_t note)
 {
-	// TODO assert(note >= 0 && note <= sizeof(magic_notes));
+	assert(note <= N_NOTES);
 	write_to_data_bus((uint8_t)chan, magic_notes[note] & 0xFF);
 	write_to_data_bus((uint8_t)chan + 1, (magic_notes[note] >> 8) & 0x0F);
 }
 
-/**
- * Plays a sound on the noise channel
- *
- * @param divider the divider value to manipulate the noise
- */
 void ay38910_play_noise(uint8_t divider)
 {
 	write_to_data_bus(NOISE_REG, 0x1F & divider);
 }
 
-/**
- * Enables/Disables tone/noise generation on one or more channels
- *
- * @param mode the mode(s) to enable, using the ENABLE/DISABLE defines
- */
 void ay38910_channel_mode(uint8_t mode)
 {
 	write_to_data_bus(MIXER_REG, MIXER_MASK | mode);
 }
 
-/**
- * Sets the amplitude for the specified channel
- *
- * @param chan the channel that will have the passed amplitude
- * @param amplitude the amplitude to set, the first 4 bits
- *        refer to the amplitude itself (0-16), the fifth bit
- *        enables the envelope filter and disables the use of the
- *        first three bits. Use with the enable/disable macros.
- */
-void ay38910_set_amplitude(Channel chan, uint8_t amplitude)
+void ay38910_set_amplitude(channel_t chan, uint8_t amplitude)
 {
 	write_to_data_bus(CHAN_TO_AMP_REG(chan), amplitude & 0x1F);
 }
 
-/**
- * Sets the envelope shape and frequency
- *
- * @param shape the shape of the envelop to enable
- * @param frequency the frequency of the envelop
- */
-void ay38910_set_envelope(EnvelopeShape shape, uint16_t frequency)
+void ay38910_set_envelope(envelope_func_t shape, uint16_t frequency)
 {
 	write_to_data_bus(FINE_ENV_REG, frequency & 0xFF);
 	write_to_data_bus(COARSE_ENV_REG, (frequency >> 8) & 0xFF);
