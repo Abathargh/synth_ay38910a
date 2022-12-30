@@ -79,6 +79,18 @@
  * Macros related to the ay38910a_play_note function
  */
 /**@{*/
+#define B_NOTE       0
+#define C_NOTE       1
+#define C_SHARP_NOTE 2
+#define D_NOTE       3
+#define D_SHARP_NOTE 4
+#define E_NOTE       5
+#define F_NOTE       6
+#define F_SHARP_NOTE 7
+#define G_NOTE       8
+#define G_SHARP_NOTE 9
+#define A_NOTE       10
+#define A_SHARP_NOTE 11
 
 #define N_NOTES      97 /**< Total number of notes, from B0 to B8 */
 
@@ -143,16 +155,15 @@ typedef enum {
 /**
  * @brief Initializes the ay38910a module
  *
- * This function initializes the control pins, data bus and clock signal
- * for the PSG. Call before using any other library function.
+ * Call before using any other library function.
  */
 void ay38910_init(void);
 
 /**
  * @brief Plays a note on the specified channel
  *
- * Plays the passed note on a specific channel; prefer using this function
- * with the *NOTE* macro function, which is safer than using raw integers.
+ * Prefer using this function with the *NOTE* macro function, which is
+ * safer than using raw integers.
  * @code
  * ay38910a_play_note(CHANNEL_A, NOTE(n, oct));
  * @endcode

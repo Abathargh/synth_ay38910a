@@ -39,7 +39,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define KEYBOARD_KEYS 12
+/************************************************************************/
+/* Defines                                                              */
+/************************************************************************/
+
+#define KEYBOARD_KEYS 12 /**< The number of supported keys */
+
+/************************************************************************/
+/* Public functions                                                     */
+/************************************************************************/
 
 /**
  * @brief Initializes the keyboard matrix peripheral
