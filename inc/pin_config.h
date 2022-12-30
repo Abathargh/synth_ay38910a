@@ -1,3 +1,8 @@
+/** @file pin_config.h
+ *
+ * Macro collections to ease the writing of pin operations.
+ */
+
 #ifndef PIN_CONFIG_H_
 #define PIN_CONFIG_H_
 

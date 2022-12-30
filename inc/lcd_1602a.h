@@ -1,4 +1,4 @@
-/** @file 1602a_lcd.h
+/** @file lcd_1602a.h
  *
  * This module implements the logic that drives the 1602a lcd screen.
  * This driver is based on the contents of the HD44780U datasheet,
