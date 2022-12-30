@@ -15,9 +15,13 @@ if (NOT MCU)
 endif (NOT MCU)
 
 # avrdude settings
-if (NOT AVRDUDE_PRG_STR)
-  set(AVRDUDE_PRG_STR atmelice)
-endif (NOT AVRDUDE_PRG_STR)
+if (${MCU} STREQUAL "atmega644")
+	set(AVRDUDE_PRG_STR atmelice)
+elseif(${MCU} STREQUAL "atmega2560")
+  set(AVRDUDE_PRG_STR stk500v2 -D -b 115200 -P /dev/ttyACM0)
+else()
+	message(ERROR "unsupported chip")
+endif()
 
 # C related stuff
 set(CMAKE_C_STANDARD 11)
@@ -30,7 +34,6 @@ add_compile_options(
 	$<$<CONFIG:DEBUG>:-ggdb> 
 	$<$<CONFIG:RELEASE>:-O2> 
 )
-
 
 file(GLOB_RECURSE SOURCES
 	"main.c"
