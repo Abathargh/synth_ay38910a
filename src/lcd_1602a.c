@@ -1,20 +1,3 @@
-/**
- * 1602a_lcd.c
- *
- * This module implements the logic that drives the 1602a lcd screen.
- * This driver is based on the contents of the HD44780U datasheet,
- * using the timing diagrams and modes of operations as references.
- *
- * The implementation is geared towards driving the display in 4-bit
- * mode and is limited to a certain subset of functionalities that
- * are actually needed for this firmware.
- *
- * The library offers the possibility to drive the contrast pin
- * through a PWM signal.
- *
- * Author: mar
- */
-
 /************************************************************************/
 /* Includes                                                             */
 /************************************************************************/
@@ -49,7 +32,6 @@
 #define FUNCTION_SET_8B1L 0x30
 #define SET_DDRAM_ADDR    0x80
 
-
 /************************************************************************/
 /* Private function declarations                                        */
 /************************************************************************/
@@ -65,15 +47,10 @@ static void send_command(unsigned char cmd);
 
 static const uint8_t ROW_OFFSETS[] = {ROW0_OFFSET, ROW1_OFFSET};
 
-
 /************************************************************************/
 /* Function implementations                                             */
 /************************************************************************/
 
-/**
- * Initializes the lcd peripheral following the protocol
- * described in the HD44780U datasheet
- */
 void lcd1602a_init(void)
 {
 	InitOutPin(rs_pin);
@@ -114,68 +91,43 @@ void lcd1602a_init(void)
 	init_contrast();
 }
 
-/**
- * Puts the display on
- */
 void lcd1602a_display_on(void)
 {
 	send_command(DISPLAY_ON);
 }
 
-/**
- * Puts the display off
- */
 void lcd1602a_display_off(void)
 {
 	send_command(DISPLAY_OFF);
 }
 
-/**
- * Puts the cursor back to the starting position
- */
 void lcd1602a_home(void)
 {
 	send_command(RETURN_HOME);
 }
 
-/**
- * Clears the display completely
- */
 void lcd1602a_clear(void)
 {
 	send_command(CLEAR_DISPLAY);
 }
 
-/**
- * Clears a row of the display
- * @param row the row to clear, 0-1
- */
 void lcd1602_clear_row(uint8_t row)
 {
-	// N.B. the HD44780U does not support
-	// single row clears, so this just prints
-	// spaces, which is suboptimal => O(n)
+	/**
+	 * 	N.B. the HD44780U does not support single row clears, so this
+	 * 	just prints	spaces, which is suboptimal => O(n)
+	 */
 	lcd1602a_set_cursor(row, 0);
-	for(size_t idx = 0; idx < NUM_COLS; idx++)
-	{
+	for(size_t idx = 0; idx < NUM_COLS; idx++) {
 		lcd1602a_putchar(' ');
 	}
 }
 
-/**
- * Sets the cursor position
- * @param x the x coordinate of the new position
- * @param y the y coordinate of the new position
- */
 void lcd1602a_set_cursor(uint8_t x, uint8_t y)
 {
 	send_command(SET_DDRAM_ADDR | ((y % NUM_COLS) + ROW_OFFSETS[x % NUM_ROWS]));
 }
 
-/**
- * Prints a single char to the last set position of the cursor.
- * @param c the char to print, as an ASCII character
- */
 void lcd1602a_putchar(unsigned char c)
 {
 	SetPin(rs_pin);
@@ -189,21 +141,12 @@ void lcd1602a_putchar(unsigned char c)
 	delay_us(2000);
 }
 
-/**
- * Prints a c-string to the display
- * @param str a null terminated ASCII string
- */
 void lcd1602a_print(const char *str)
 {
 	lcd1602a_clear();
 	lcd1602a_print_row(str, 0);
 }
 
-/**
- * Prints a c-string to the display on the specified row
- * @param str a null terminated ASCII string
- * @param row the row where to print the string
- */
 void lcd1602a_print_row(const char *str, uint8_t row)
 {
 	// TODO maybe an option to clear only if the user wants
@@ -213,12 +156,10 @@ void lcd1602a_print_row(const char *str, uint8_t row)
 
 	lcd1602_clear_row(row);
 	lcd1602a_set_cursor(row, 0);
-	for(; (idx < len) && (idx < NUM_COLS); idx++)
-	{
+	for(; (idx < len) && (idx < NUM_COLS); idx++)  {
 		lcd1602a_putchar(str[idx]);
 	}
 }
-
 
 /************************************************************************/
 /* Private Helpers                                                      */
