@@ -24,7 +24,7 @@ void delay_us(uint16_t us)
 	 * Note that this implementation is inlined, so there should not be any
 	 * additional function call overhead.
 	 */
-	asm volatile(
+	asm (
 		"MOV ZH,%B0\n\t"  // MOV: 1 cycle
 		"MOV ZL,%A0\n\t"  // MOV: 1 cycle
  		"%=:\n\t"         // 16 cycles (last BRNE = 1 evens out with MOV)
@@ -44,6 +44,7 @@ void delay_us(uint16_t us)
 		"BRNE %=b\n\t"    // BRNE: 2 if condition is false, 1 otherwise
 		:
 		: "r" (us)
+		: "r30", "r31"
 	);
 }
 
@@ -70,12 +71,8 @@ void delay_ms(uint16_t ms)
 	 *   T_del(n) = n * 1,001 ms + 0,001 ms
 	 * Note that this implementation is inlined, so there should not be any
 	 * additional function call overhead.
-	 *
-	 * TODO inform the compiler via clobber that the registers are used and check
-	 * if it works refer to inline assembly guide optimization => try to remove
-	 * MOVs since R25:R24 should be used as first input register
 	 */
-	asm volatile(
+	asm (
 		"MOV ZH,%B0\n\t"  // MOV: 1 cycle
 		"MOV ZL,%A0\n\t"  // MOV: 1 cycle => 1 + (16012 + 4) * ms = rep*16016 + 1
 		"OUTER%=:\n\t"    // (4000 + 3) * 4 = 16012
@@ -104,5 +101,6 @@ void delay_ms(uint16_t ms)
 		"BRNE OUTER%=\n\t"    // BRNE: 2 if condition is false, 1 otherwise
 		:
 		: "r" (ms)
+		: "r17", "r18", "r30", "r31" /* Z => r30/r31 */
 	);
 }

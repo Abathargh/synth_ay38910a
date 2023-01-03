@@ -5,6 +5,7 @@
 #include "ay38910a.h"
 #include "pin_config.h"
 #include "pinout.h"
+#include "delay.h"
 
 #include <assert.h>
 
@@ -148,7 +149,9 @@ static inline __attribute__((always_inline))
 void inactive_mode(void)
 {
 	ResetPin(bc1_pin);
+	delay_us(1);
 	ResetPin(bdir_pin);
+	delay_us(1);
 }
 
 /**
@@ -158,7 +161,9 @@ static inline __attribute__((always_inline))
 void write_mode(void)
 {
 	ResetPin(bc1_pin);
+	delay_us(1);
 	SetPin(bdir_pin);
+	delay_us(1);
 }
 
 /**
@@ -168,7 +173,9 @@ static inline __attribute__((always_inline))
 void latch_address_mode(void)
 {
 	SetPin(bc1_pin);
+	delay_us(1);
 	SetPin(bdir_pin);
+	delay_us(1);
 }
 
 /**
@@ -177,7 +184,8 @@ void latch_address_mode(void)
  * @param address the address of the register to use
  * @param data the payload to write
  */
-static inline void write_to_data_bus(uint8_t address, uint8_t data)
+static inline __attribute__((always_inline))
+void write_to_data_bus(uint8_t address, uint8_t data)
 {
 	// Set the register address
 	inactive_mode();
