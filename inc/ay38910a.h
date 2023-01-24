@@ -16,14 +16,15 @@
 /************************************************************************/
 
 #include <stdint.h>
+#include "pin_config.h"
+#include "timer.h"
 
 /************************************************************************/
 /* Defines                                                              */
 /************************************************************************/
 
 /**
- * @defgroup ToneNoiseMacros Tone and Noise channel macros
- *
+ * @defgroup ToneNoiseMacros Tone and Noiset channel macros
  * Channel-related macros.
  */
 /**@{*/
@@ -66,12 +67,29 @@
 
 /**
  * @defgroup EnvelopeMacros Envelope enable macros
+ * Macros related to the envelope management.
  */
 /**@{*/
 #define ENVELOPE_ENABLE 4 /**< Bit 4 if the amplitude word is used to control envelopes */
 
 #define AMPL_ENVELOPE_DISABLE (~(1 << ENVELOPE_ENABLE)) /**< Envelope disable mask */
 #define AMPL_ENVELOPE_ENABLE  (1 << ENVELOPE_ENABLE)    /**< Envelope enable mask */
+
+/** @def FREQ2SCALING(f)
+ *
+ * @brief Converts the passed frequency to its equivalent scaling
+ *
+ * The envelope generator frequency is calculated in the following way:
+ * @code
+ * f = f_CLK / 256 / scaling_factor = 2e6 Hz / 256 / scaling_factor
+ * scaling_factor = 2e6 / 256 / f
+ * scaling_factor = 7812.5 / f ~= 7812 / f
+ * @endcode
+ *
+ * @param f the desired frequency
+ * @return the scaling corresponding to the passed frequency
+ */
+#define FREQ2SCALING(f) ((uint16_t)(7812/f))
 /**@}*/
 
 /**
@@ -121,6 +139,13 @@
 /* Typedefs                                                             */
 /************************************************************************/
 
+typedef struct {
+	port_t * bus_port;
+	port_t * ctl_port;
+	uint8_t  bc1;
+	uint8_t  bdir;
+} ay38910a_t;
+
 /**
  * @brief The channels physically present on the AY38910a chip
  *
@@ -148,6 +173,7 @@ typedef enum {
 	FUNC_CONTINUE  = 0x08  /**< If not active, the counter resets and holds */
 } envelope_func_t;
 
+
 /************************************************************************/
 /* Public functions                                                     */
 /************************************************************************/
@@ -157,7 +183,7 @@ typedef enum {
  *
  * Call before using any other library function.
  */
-void ay38910_init(void);
+void ay38910_init(const ay38910a_t * ay, const timer_t * t);
 
 /**
  * @brief Plays a note on the specified channel
@@ -171,7 +197,7 @@ void ay38910_init(void);
  * @param chan the channel to program
  * @param note the note to play depending on the internal mapping (0 off)
  */
-void ay38910_play_note(channel_t chan, uint8_t note);
+void ay38910_play_note(const ay38910a_t * ay, channel_t chan, uint8_t note);
 
 
 /**
@@ -179,7 +205,7 @@ void ay38910_play_note(channel_t chan, uint8_t note);
  *
  * @param divider the divider value to manipulate the noise
  */
-void ay38910_play_noise(uint8_t sound);
+void ay38910_play_noise(const ay38910a_t * ay, uint8_t sound);
 
 
 /**
@@ -203,7 +229,7 @@ void ay38910_play_noise(uint8_t sound);
  *
  * @param mode the mode(s) to enable, using the ENABLE/DISABLE defines
  */
-void ay38910_channel_mode(uint8_t mode);
+void ay38910_channel_mode(const ay38910a_t * ay, uint8_t mode);
 
 /**
  * @brief Sets the amplitude for the specified channel
@@ -219,7 +245,7 @@ void ay38910_channel_mode(uint8_t mode);
  * @param chan the channel that will have the passed amplitude
  * @param amplitude the amplitude to set. Use with the enable/disable macros.
  */
-void ay38910_set_amplitude(channel_t chan, uint8_t amplitude);
+void ay38910_set_amplitude(const ay38910a_t * ay, channel_t chan, uint8_t amplitude);
 
 /**
  * @brief Sets the envelope shape function bits and scales its frequency
@@ -233,8 +259,8 @@ void ay38910_set_amplitude(channel_t chan, uint8_t amplitude);
  * can be applied is 0.12-7.8k Hz.
  *
  * @param shape the shape of the envelop to enable
- * @param frequency the frequency of the envelope
+ * @param scaling the frequency of the envelope
  */
-void ay38910_set_envelope(envelope_func_t shape, uint16_t scaling);
+void ay38910_set_envelope(const ay38910a_t * ay, envelope_func_t shape, uint16_t scaling);
 
 #endif /* AY38910A_H_ */

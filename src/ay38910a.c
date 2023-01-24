@@ -4,7 +4,6 @@
 
 #include "ay38910a.h"
 #include "pin_config.h"
-#include "pinout.h"
 #include "delay.h"
 
 #include <assert.h>
@@ -12,6 +11,8 @@
 /************************************************************************/
 /* Defines                                                              */
 /************************************************************************/
+
+#define INLINED __attribute__((always_inline)) inline
 
 #define NOISE_REG      0x06
 #define MIXER_REG      0x07
@@ -55,11 +56,11 @@
 /* Private function declarations                                        */
 /************************************************************************/
 
-static void inactive_mode(void);
-static void latch_address_mode(void);
-static void write_mode(void);
-static void write_to_data_bus(uint8_t address, uint8_t data);
-static void oc2a_pin_config(void);
+static void inactive_mode(const ay38910a_t * ay);
+static void latch_address_mode(const ay38910a_t * ay);
+static void write_mode(const ay38910a_t * ay);
+static void write_to_data_bus(const ay38910a_t * ay, uint8_t address, uint8_t data);
+static void oc2a_pin_config(const timer_t * t);
 
 /************************************************************************/
 /* Private variables                                                    */
@@ -96,46 +97,45 @@ static const unsigned int magic_notes[] = {
 	28, 27, 25, 24, 22, 21, 20, 19, 18, 17, 16,
 };
 
-
 /************************************************************************/
 /* Function implementations                                             */
 /************************************************************************/
 
-void ay38910_init()
+void ay38910_init(const ay38910a_t * ay, const timer_t * t)
 {
-	InitOutPin(bc1_pin);
-	InitOutPin(bdir_pin);
-	InitOutPort(ay_bus_port);
-	oc2a_pin_config();
+	as_output_pin(ay->ctl_port, ay->bc1);
+	as_output_pin(ay->ctl_port, ay->bdir);
+	as_output_port(ay->bus_port);
+	oc2a_pin_config(t);
 }
 
-void ay38910_play_note(channel_t chan, uint8_t note)
+void ay38910_play_note(const ay38910a_t * ay, channel_t chan, uint8_t note)
 {
 	assert(note <= N_NOTES);
-	write_to_data_bus((uint8_t)chan, magic_notes[note] & 0xFF);
-	write_to_data_bus((uint8_t)chan + 1, (magic_notes[note] >> 8) & 0x0F);
+	write_to_data_bus(ay, (uint8_t)chan, magic_notes[note] & 0xFF);
+	write_to_data_bus(ay, (uint8_t)chan + 1, (magic_notes[note] >> 8) & 0x0F);
 }
 
-void ay38910_play_noise(uint8_t divider)
+void ay38910_play_noise(const ay38910a_t * ay, uint8_t divider)
 {
-	write_to_data_bus(NOISE_REG, 0x1F & divider);
+	write_to_data_bus(ay, NOISE_REG, 0x1F & divider);
 }
 
-void ay38910_channel_mode(uint8_t mode)
+void ay38910_channel_mode(const ay38910a_t * ay,uint8_t mode)
 {
-	write_to_data_bus(MIXER_REG, MIXER_MASK | mode);
+	write_to_data_bus(ay, MIXER_REG, MIXER_MASK | mode);
 }
 
-void ay38910_set_amplitude(channel_t chan, uint8_t amplitude)
+void ay38910_set_amplitude(const ay38910a_t * ay, channel_t chan, uint8_t amplitude)
 {
-	write_to_data_bus(CHAN_TO_AMP_REG(chan), amplitude & 0x1F);
+	write_to_data_bus(ay, CHAN_TO_AMP_REG(chan), amplitude & 0x1F);
 }
 
-void ay38910_set_envelope(envelope_func_t shape, uint16_t frequency)
+void ay38910_set_envelope(const ay38910a_t * ay, envelope_func_t shape, uint16_t frequency)
 {
-	write_to_data_bus(FINE_ENV_REG, frequency & 0xFF);
-	write_to_data_bus(COARSE_ENV_REG, (frequency >> 8) & 0xFF);
-	write_to_data_bus(SHAPE_ENV_REG, ((uint8_t)shape) & 0x0F);
+	write_to_data_bus(ay, FINE_ENV_REG, frequency & 0xFF);
+	write_to_data_bus(ay, COARSE_ENV_REG, (frequency >> 8) & 0xFF);
+	write_to_data_bus(ay, SHAPE_ENV_REG, ((uint8_t)shape) & 0x0F);
 }
 
 /************************************************************************/
@@ -145,36 +145,36 @@ void ay38910_set_envelope(envelope_func_t shape, uint16_t frequency)
 /**
  * Set the PSG to inactive mode
  */
-static inline __attribute__((always_inline))
-void inactive_mode(void)
+static INLINED
+void inactive_mode(const ay38910a_t * ay)
 {
-	ResetPin(bc1_pin);
+	clear_pin(ay->ctl_port, ay->bc1);
 	delay_us(1);
-	ResetPin(bdir_pin);
+	clear_pin(ay->ctl_port, ay->bdir);
 	delay_us(1);
 }
 
 /**
  * Set the PSG to write mode
  */
-static inline __attribute__((always_inline))
-void write_mode(void)
+static INLINED
+void write_mode(const ay38910a_t * ay)
 {
-	ResetPin(bc1_pin);
+	clear_pin(ay->ctl_port, ay->bc1);
 	delay_us(1);
-	SetPin(bdir_pin);
+	set_pin(ay->ctl_port, ay->bdir);
 	delay_us(1);
 }
 
 /**
  * Set the PSG to latch address mode
  */
-static inline __attribute__((always_inline))
-void latch_address_mode(void)
+static INLINED
+void latch_address_mode(const ay38910a_t * ay)
 {
-	SetPin(bc1_pin);
+	set_pin(ay->ctl_port, ay->bc1);
 	delay_us(1);
-	SetPin(bdir_pin);
+	set_pin(ay->ctl_port, ay->bdir);
 	delay_us(1);
 }
 
@@ -184,19 +184,19 @@ void latch_address_mode(void)
  * @param address the address of the register to use
  * @param data the payload to write
  */
-static inline __attribute__((always_inline))
-void write_to_data_bus(uint8_t address, uint8_t data)
+static INLINED
+void write_to_data_bus(const ay38910a_t  * ay, uint8_t address, uint8_t data)
 {
 	// Set the register address
-	inactive_mode();
-	SetPort(ay_bus_port, address);
-	latch_address_mode();
-	inactive_mode();
+	inactive_mode(ay);
+	set_port(ay->bus_port, address);
+	latch_address_mode(ay);
+	inactive_mode(ay);
 
 	// Write to the previously set register
-	write_mode();
-	SetPort(ay_bus_port, data);
-	inactive_mode();
+	write_mode(ay);
+	set_port(ay->bus_port, data);
+	inactive_mode(ay);
 }
 
 
@@ -206,18 +206,11 @@ void write_to_data_bus(uint8_t address, uint8_t data)
  *
  * @param ocr2a_value the value of the timer threshold
  */
-static void oc2a_pin_config(void)
+static void oc2a_pin_config(const timer_t * t)
 {
-	InitOutPin(oc2a_pin);
-
-	OCR2A = AY_CLK_OCR;
-
-	TCCR2A = (0 << COM2A1) | (1 << COM2A0) | // Enable output signal on OC2A pin
-	         (1 << WGM21)  | (0 << WGM20);   // Enable Clear Timer on Compare Mode
-
-	TCCR2B = (0 << WGM22) |                            // MSB output enable
-	         (0 << CS22)  | (0 << CS21) | (1 << CS20); // Clock select with no prescaler
-
-	// Disable the compare match interrupt for register A
-	TIMSK2 = 0;
+	as_output_pin(t->ocr_a_port, t->ocr_a_pin);
+	*t->ocr_a_8  = AY_CLK_OCR; // 8-bit register: ocr_a_8 active
+	*t->tccr_a = 0x42;         // Enable output signal on OC2A pin, CTC Mode
+	*t->tccr_b = 0x01;         // MSB output enable, clock select with no prescaler
+	*t->tim_sk = 0;            // Disable the compare match interrupt for register A
 }
