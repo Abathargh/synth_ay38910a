@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_SYSTEM_NAME "Generic")
 set(CMAKE_GENERATOR "Unix Makefiles")
+set(CMAKE_C_STANDARD 11)
 project(ay38910a_synth C)
 
 # Default to Debug build
@@ -11,7 +12,7 @@ endif()
 
 # Set the MCU
 if (NOT MCU)
-  set(MCU "atmega644")
+  set(MCU "atmega2560")
 endif (NOT MCU)
 
 # avrdude settings
@@ -24,19 +25,17 @@ else()
 endif()
 
 # C related stuff
-set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_COMPILER avr-gcc)
 set(CMAKE_ASM_COMPILER avr-gcc)
-set(GCC_FLAGS "-Wall -Wextra -Werror -DF_CPU=16000000 -mmcu=${MCU}")
+set(GCC_FLAGS "-Wall -Wextra -Wpedantic -Werror -DF_CPU=16000000 -mmcu=${MCU}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_FLAGS}")
 add_compile_options(
-	$<$<CONFIG:DEBUG>:-Og> 
-	$<$<CONFIG:DEBUG>:-ggdb> 
-	$<$<CONFIG:RELEASE>:-O2> 
+	$<$<CONFIG:DEBUG>:-Og>
+	$<$<CONFIG:DEBUG>:-ggdb>
+	$<$<CONFIG:RELEASE>:-O2>
 )
 
 file(GLOB_RECURSE SOURCES
-	"main.c"
 	"src/*.*"
 )
 
