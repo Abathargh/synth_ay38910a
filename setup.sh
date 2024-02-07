@@ -16,7 +16,7 @@ while getopts "r" opt; do
 done
 
 
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 passed_target=$1
 
 for target in "${targets[@]}"; do

@@ -23,15 +23,19 @@ pacman -S mingw-w64-x86_64-avr-binutils \
 ## Build
 
 ```bash
+./setup.sh atmega644    # or ./setup.sh atmega2560
+./setup.sh -r atmega644 # -r => release mode
+
+# or 
 mkdir build && cd build
 cmake .. -B .
 
 # explicitly pass the mcu and prog string
-cmake .. -B . -DMCU=atmega644 -DAVRDUDE_PRG_STR=atmelice
+cmake .. -B . -DMCU=atmega644
 
-make
-make flash
-make flash-debug
+make             # build hex/elf/bin
+make flash       # flash the hex file
+make flash-debug # flash the elf file
 
 make docs
 make clean-docs
