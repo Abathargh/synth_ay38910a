@@ -5,7 +5,6 @@
 #include "lcd_1602a.h"
 
 #include "delay.h"
-#include "pinout.h"
 #include "pin_config.h"
 
 #include <string.h>

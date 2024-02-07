@@ -5,7 +5,6 @@
 #include "keyboard_ifc.h"
 
 #include "delay.h"
-#include "pinout.h"
 #include "pin_config.h"
 
 #include <avr/interrupt.h>
