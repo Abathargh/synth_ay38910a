@@ -36,6 +36,8 @@
 /* Includes                                                             */
 /************************************************************************/
 
+#include "pin_config.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -46,13 +48,27 @@
 #define KEYBOARD_KEYS 12 /**< The number of supported keys */
 
 /************************************************************************/
+/* Typedefs                                                             */
+/************************************************************************/
+
+typedef struct keyboard_t {
+	port_t * output;
+	port_t * input;
+	port_t * buttons_port;
+	port_t * adc_port;
+	uint8_t potentiometer;
+	uint8_t browse;
+	uint8_t confirm;
+} keyboard_t;
+
+/************************************************************************/
 /* Public functions                                                     */
 /************************************************************************/
 
 /**
  * @brief Initializes the keyboard matrix peripheral
  */
-void keyboard_init(void);
+void keyboard_init(keyboard_t * key);
 
 
 /**
@@ -69,7 +85,7 @@ void keyboard_init(void);
  * @return true a new key combination was detected
  * @return false same key combination was detected
  */
-bool keyboard_acquire(uint16_t *mask);
+bool keyboard_acquire(keyboard_t * key, uint16_t *mask);
 
 
 /**
