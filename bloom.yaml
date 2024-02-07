@@ -1,0 +1,26 @@
+environments:
+  atmega644:
+    debugTool:
+      name: atmel-ice
+      releasePostDebugSession: true
+    target:
+      name: atmega644
+      physicalInterface: jtag
+      variantName: atmega644v-10pu
+    debugServer:
+      name: avr-gdb-rsp
+      ipAddress: 127.0.0.1
+      port: '1442'
+  atmega260:
+    debugTool:
+      name: atmel-ice
+      releasePostDebugSession: true
+    target:
+      name: atmega2560
+      physicalInterface: jtag
+    debugServer:
+      name: avr-gdb-rsp
+      ipAddress: 127.0.0.1
+      port: '1442'
+insight:
+  enabled: true
