@@ -72,7 +72,7 @@
 /**@{*/
 #define ENVELOPE_ENABLE 4 /**< Bit 4 if the amplitude word is used to control envelopes */
 
-#define AMPL_ENVELOPE_DISABLE (~(1 << ENVELOPE_ENABLE)) /**< Envelope disable mask */
+#define AMPL_ENVELOPE_DISABLE (0 << ENVELOPE_ENABLE) /**< Envelope disable mask */
 #define AMPL_ENVELOPE_ENABLE  (1 << ENVELOPE_ENABLE)    /**< Envelope enable mask */
 
 /** @def FREQ2SCALING(f)
