@@ -10,60 +10,59 @@
 /* Includes                                                             */
 /************************************************************************/
 
-#include <avr/io.h>
+#include <stdint.h>
 
 /************************************************************************/
 /* Defines                                                              */
 /************************************************************************/
 
-#define INIT_OUT_PIN(PRT,PIN)   ((DDR ## PRT)  |= (1 << PIN))
-#define INIT_IN_PIN(PRT,PIN)    ((DDR ## PRT)  &=  ~(1 << PIN))
-#define INIT_PULL_PIN(PRT,PIN)  ((PORT ## PRT) |= (1 << PIN))
+/************************************************************************/
+/* Typedefs                                                             */
+/************************************************************************/
 
-#define GET_PIN(PRT,BIT)        ((PIN ## PRT)  &   (1 << BIT))
-#define SET_PIN(PRT,PIN)        ((PORT ## PRT) |=  (1 << PIN))
-#define RST_PIN(PRT,PIN)        ((PORT ## PRT) &= ~(1 << PIN))
+typedef volatile uint8_t map_io8;
+typedef volatile uint16_t map_io16;
 
-#define INIT_OUT_PORT(PRT)      ((DDR ## PRT)  = 0xFF)
-#define INIT_IN_PORT(PRT)       ((DDR ## PRT)  = 0x00)
-#define INIT_PORT(PRT,DATA)     ((DDR ## PRT)  = DATA)
+typedef struct port_t {
+	map_io8 * direction;
+	map_io8 * output;
+	map_io8 * input;
+} port_t;
 
-#define INIT_OR_PORT(PRT,DATA)  ((DDR ## PRT) |= DATA)
-#define INIT_AND_PORT(PRT,DATA) ((DDR ## PRT) &= DATA)
-#define INIT_PULL_PORT(PRT,PIN) ((PORT ## PRT) = 0xFF)
+/************************************************************************/
+/* Public functions                                                     */
+/************************************************************************/
 
-#define SET_HI_PORT(PRT,DATA)   ((PORT ## PRT) = (PORT ## PRT & 0x0F) | (DATA & 0xF0))
-#define SET_LO_PORT(PRT,DATA)   ((PORT ## PRT) = (PORT ## PRT & 0xF0) | (DATA & 0x0F))
+void as_output_pin(port_t * p, uint8_t pin);
 
+void as_input_pin(port_t * p, uint8_t pin);
 
-#define SET_OR_PORT(PRT,DATA)   ((PORT ## PRT) |= DATA)
-#define SET_PORT(PRT,DATA)      ((PORT ## PRT)  = DATA)
-#define GET_PORT(PRT)           ((PIN ## PRT))
+void as_output_port(port_t * p);
 
+void as_input_port(port_t * p);
 
-#define InitOutPin(PIN)         INIT_OUT_PIN(PIN)
-#define InitInPin(PIN)          INIT_IN_PIN(PIN)
-#define InitPullPin(PIN)        INIT_PULL_PIN(PIN)
+void setup_with_mask(port_t * p, uint8_t mask);
 
+void setup_with_cleared_mask(port_t * p, uint8_t mask);
 
-#define SetPin(PIN)             SET_PIN(PIN)
-#define ResetPin(PIN)           RST_PIN(PIN)
-#define GetPin(PIN)             GET_PIN(PIN)
+void as_input_pull_up_pin(port_t * p, uint8_t pin);
 
-#define InitOutPort(PORT)       INIT_OUT_PORT(PORT)
-#define InitInPort(PORT)        INIT_IN_PORT(PORT)
-#define InitPort(PORT,DATA)     INIT_PORT(PORT,DATA)
+void disable_pull_up(port_t * p, uint8_t pin);
 
-#define InitOrPort(PORT,DATA)   INIT_OR_PORT(PORT,DATA)
-#define InitAndPort(PORT,DATA)  INIT_AND_PORT(PORT,DATA)
-#define InitPullPort(PORT)      INIT_PULL_PORT(PORT)
+void set_pin(port_t * p, uint8_t pin);
 
+void clear_pin(port_t * p, uint8_t pin);
 
-#define SetHiPort(PORT,DATA)    SET_HI_PORT(PORT,DATA)
-#define SetLoPort(PORT,DATA)    SET_LO_PORT(PORT,DATA)
+uint8_t read_pin(port_t * p, uint8_t pin);
 
-#define SetOrPort(PORT,DATA)    SET_OR_PORT(PORT,DATA)
-#define SetPort(PORT,DATA)      SET_PORT(PORT,DATA)
-#define GetPort(PORT)           GET_PORT(PORT)
+void set_port(port_t * p, uint8_t val);
+
+void set_port_mask(port_t * p, uint8_t mask);
+
+void clear_port_mask(port_t * p, uint8_t mask);
+
+uint8_t read_port(port_t * p);
+
+uint8_t read_port_mask(port_t * p, uint8_t mask);
 
 #endif /* PIN_CONFIG_H_ */
