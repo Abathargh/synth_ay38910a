@@ -24,7 +24,7 @@ void delay_us(uint16_t us)
 	 * Note that this implementation is inlined, so there should not be any
 	 * additional function call overhead.
 	 */
-	asm (
+	__asm__(
 		"MOV ZH,%B0\n\t"  // MOV: 1 cycle
 		"MOV ZL,%A0\n\t"  // MOV: 1 cycle
  		"%=:\n\t"         // 16 cycles (last BRNE = 1 evens out with MOV)
@@ -72,7 +72,7 @@ void delay_ms(uint16_t ms)
 	 * Note that this implementation is inlined, so there should not be any
 	 * additional function call overhead.
 	 */
-	asm (
+	__asm__(
 		"MOV ZH,%B0\n\t"  // MOV: 1 cycle
 		"MOV ZL,%A0\n\t"  // MOV: 1 cycle => 1 + (16012 + 4) * ms = rep*16016 + 1
 		"OUTER%=:\n\t"    // (4000 + 3) * 4 = 16012
