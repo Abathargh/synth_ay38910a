@@ -24,7 +24,7 @@
 /************************************************************************/
 
 /**
- * @defgroup ToneNoiseMacros Tone and Noiset channel macros
+ * @defgroup ToneNoiseMacros Tone and Noise channel macros
  * Channel-related macros.
  */
 /**@{*/
@@ -48,7 +48,7 @@
  * @param c the channel bit, as specified in the CH*_TONE/NOISE macros
  * @return the encoded bitmask that enables the channel
  */
-#define CHAN_ENABLE(c)  (~(1 << c))
+#define  CHAN_ENABLE(c)  (~(1 << c))
 
 
 /** @def CHAN_DISABLE(c)
@@ -66,14 +66,15 @@
 /**@}*/
 
 /**
- * @defgroup EnvelopeMacros Envelope enable macros
- * Macros related to the envelope management.
+ * @defgroup AmplEnvelopeMacros Envelope and amplitude macros
+ * Macros related to amplitude and envelope management.
  */
 /**@{*/
-#define ENVELOPE_ENABLE 4 /**< Bit 4 if the amplitude word is used to control envelopes */
+#define MAX_AMPL   15      /**< Maximum value for the amplitude           */
+#define ENVELOPE_ENABLE 4  /**< Amplitude[4] is used to control envelopes */
 
-#define AMPL_ENVELOPE_DISABLE (0 << ENVELOPE_ENABLE) /**< Envelope disable mask */
-#define AMPL_ENVELOPE_ENABLE  (1 << ENVELOPE_ENABLE)    /**< Envelope enable mask */
+#define AMPL_ENVELOPE_DISABLE (~(1 << ENVELOPE_ENABLE)) /**< Envelope disable mask */
+#define AMPL_ENVELOPE_ENABLE  (1 << ENVELOPE_ENABLE)    /**< Envelope enable  mask */
 
 /** @def FREQ2SCALING(f)
  *
