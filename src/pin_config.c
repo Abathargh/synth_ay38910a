@@ -47,7 +47,7 @@ void setup_with_cleared_mask(port_t * p, uint8_t mask) {
 INLINED
 void as_input_pull_up_pin(port_t * p, uint8_t pin) {
 	*p->direction &= ~(1 << pin);
-	*p->output |= 1 << pin;
+	*p->output |= (1 << pin);
 }
 
 INLINED
@@ -69,7 +69,7 @@ void clear_pin(port_t * p, uint8_t pin) {
 
 INLINED
 uint8_t read_pin(port_t * p, uint8_t pin){
- return (*p->input & 1 << pin) >> pin;
+ return (*p->input & (1 << pin)) >> pin;
 }
 
 INLINED
