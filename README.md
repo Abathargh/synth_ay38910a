@@ -1,7 +1,8 @@
-# Ay38910a Synth
+# ay38910a synth
 
-A synth based on the AY38910a programmable sound generator chip, implemented using an megaAVR ATMega microcontroller
-(currently tested with an ATMega644 standalone system and on an Arduino Mega).
+A synth based on the AY38910a programmable sound generator chip, implemented 
+using an ATMega microcontroller (currently tested with an ATMega644 standalone 
+system and on an Arduino Mega).
 
 ## Pre-reqs
 
