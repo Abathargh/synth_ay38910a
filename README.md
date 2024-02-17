@@ -24,8 +24,8 @@ pacman -S mingw-w64-x86_64-avr-binutils \
 ## Build
 
 ```bash
-./setup.sh atmega644    # or ./setup.sh atmega2560
-./setup.sh -r atmega644 # -r => release mode
+./scripts/setup.sh atmega644    # or ./scripts/setup.sh atmega2560
+./scripts/setup.sh -r atmega644 # -r => release mode
 
 # or 
 mkdir build && cd build

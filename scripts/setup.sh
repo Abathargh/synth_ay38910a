@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 targets=(atmega644 atmega2560)
 release="-DCMAKE_BUILD_TYPE=Debug"
 
