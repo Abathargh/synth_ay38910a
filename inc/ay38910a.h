@@ -70,6 +70,7 @@
  * Macros related to amplitude and envelope management.
  */
 /**@{*/
+#define MIN_AMPL   0       /**< Minimum value for the amplitude           */
 #define MAX_AMPL   15      /**< Maximum value for the amplitude           */
 #define ENVELOPE_ENABLE 4  /**< Amplitude[4] is used to control envelopes */
 
