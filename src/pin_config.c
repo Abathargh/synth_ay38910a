@@ -68,6 +68,11 @@ void clear_pin(port_t * p, uint8_t pin) {
 }
 
 INLINED
+void toggle_pin(port_t * p, uint8_t pin) {
+	*p->output ^= (1 << pin);
+}
+
+INLINED
 uint8_t read_pin(port_t * p, uint8_t pin){
  return (*p->input & (1 << pin)) >> pin;
 }

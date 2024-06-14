@@ -53,6 +53,8 @@ void set_pin(port_t * p, uint8_t pin);
 
 void clear_pin(port_t * p, uint8_t pin);
 
+void toggle_pin(port_t * p, uint8_t pin);
+
 uint8_t read_pin(port_t * p, uint8_t pin);
 
 void set_port(port_t * p, uint8_t val);
