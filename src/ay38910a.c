@@ -208,9 +208,9 @@ void write_to_data_bus(const ay38910a_t  * ay, uint8_t address, uint8_t data)
  */
 static void oc2a_pin_config(const timer_t * t)
 {
-	as_output_pin(t->ocr_a_port, t->ocr_a_pin);
+	as_output_pin(t->ocr_a_port, t->ocr_a_pin); // OCxA pin enabled as output
 	*t->ocr_a_8  = AY_CLK_OCR; // 8-bit register: ocr_a_8 active
-	*t->tccr_a = 0x42;         // Enable output signal on OC2A pin, CTC Mode
+	*t->tccr_a = 0x42;         // CTC Mode, toggle OCxA on compare match
 	*t->tccr_b = 0x01;         // MSB output enable, clock select with no prescaler
 	*t->tim_sk = 0;            // Disable the compare match interrupt for register A
 }
