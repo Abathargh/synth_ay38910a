@@ -26,8 +26,8 @@ References:
 """
 
 octave = 12                   # Notes in an octave
-freq_a4 = 440                 # Frequency of the fourth octave A note (Hz)
-f_clk = 2_000_000             # Frequency of the ay3910a clock signal (Hz)
+freq_a4 = 440                 # Fourth octave A note (Hz)
+f_clk = 2_000_000             # Ay3910a clock signal (Hz)
 a4_idx = 0                    # A4 is the 0th note in
 b4_idx = 2                    # B4 is the 2nd note
 b0_n = b4_idx - (4 * octave)  # B0 index (lowest note)
@@ -48,6 +48,7 @@ print("static const unsigned int magic_notes[] = {")
 print(f"\t{magic_values[0]}")
 start = 1
 for i in range(1, len(magic_values), octave):
-    print("\t" + ", ".join([str(e) for e in magic_values[start:start+octave]]))
+    row = [str(e) for e in magic_values[start:start+octave]]
+    print("\t" + ", ".join(row))
     start += octave
 print("};")
