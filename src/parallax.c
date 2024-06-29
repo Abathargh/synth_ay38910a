@@ -140,7 +140,6 @@ const struct note verse[] = {
 void play_parallax(const ay38910a_t * ay, const timer_t * timer) {
 	ay38910_init(ay, timer);
 	ay38910_channel_mode(ay, CHAN_ENABLE(CHA_TONE));
-	ay38910_set_amplitude(ay, CHANNEL_A, MAX_AMPL | AMPL_ENVELOPE_DISABLE);
 
 	while(1) {
 		ay38910_set_amplitude(ay, CHANNEL_A, MAX_AMPL | AMPL_ENVELOPE_DISABLE);
