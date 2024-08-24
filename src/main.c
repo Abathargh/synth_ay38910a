@@ -1,12 +1,7 @@
 #include <ay38910a.h>
-#include <delay.h>
 #include <avr/io.h>
 
 #define SIZE(x) ((uint8_t)(sizeof(x)/sizeof(x[0])))
-
-static port_t port_a = {.direction=&DDRA,	.input=&PINA, .output=&PORTA};
-static port_t port_b = {.direction=&DDRB,	.input=&PINB, .output=&PORTB};
-static port_t port_c = {.direction=&DDRC,	.input=&PINC, .output=&PORTC};
 
 static const timer_t * timer2 = &(timer_t) {
 	.tccr_a     = &TCCR2A,
@@ -23,10 +18,17 @@ static const timer_t * timer2 = &(timer_t) {
 };
 
 static const ay38910a_t * ay = &(ay38910a_t) {
+#if defined(__AVR_ATmega2560__)
+	.bus_port = &(port_t) {&DDRK, &PORTK, &PINK},
+	.ctl_port = &(port_t) {&DDRH, &PORTH, &PINH},
+	.bc1      = 4,
+	.bdir     = 5
+#elif defined(__AVR_ATmega644__)
 	.bus_port = &port_a,
 	.ctl_port = &port_c,
 	.bc1      = 7,
 	.bdir     = 6
+#endif
 };
 
 #ifdef USE_PARALLAX
