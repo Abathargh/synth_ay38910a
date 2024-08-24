@@ -48,7 +48,7 @@
  * @param c the channel bit, as specified in the CH*_TONE/NOISE macros
  * @return the encoded bitmask that enables the channel
  */
-#define  CHAN_ENABLE(c)  (~(1 << c))
+#define CHAN_ENABLE(c)  (~(1 << c))
 
 
 /** @def CHAN_DISABLE(c)
