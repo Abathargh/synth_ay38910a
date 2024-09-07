@@ -126,16 +126,16 @@ void ay38910_channel_mode(const ay38910a_t * ay, uint8_t mode)
 	write_to_data_bus(ay, MIXER_REG, MIXER_MASK | mode);
 }
 
-void ay38910_set_amplitude(const ay38910a_t * ay, channel_t chan, uint8_t amplitude)
+void ay38910_set_amplitude(const ay38910a_t * ay, channel_t chan, uint8_t amp)
 {
-	write_to_data_bus(ay, CHAN_TO_AMP_REG(chan), amplitude & 0x1F);
+	write_to_data_bus(ay, CHAN_TO_AMP_REG(chan), amp & 0x1F);
 }
 
-void ay38910_set_envelope(const ay38910a_t * ay, envelope_func_t shape, uint16_t frequency)
+void ay38910_set_envelope(const ay38910a_t * ay, uint8_t shape, uint16_t freq)
 {
-	write_to_data_bus(ay, FINE_ENV_REG, frequency & 0xFF);
-	write_to_data_bus(ay, COARSE_ENV_REG, (frequency >> 8) & 0xFF);
-	write_to_data_bus(ay, SHAPE_ENV_REG, ((uint8_t)shape) & 0x0F);
+	write_to_data_bus(ay, FINE_ENV_REG, freq & 0xFF);
+	write_to_data_bus(ay, COARSE_ENV_REG, (freq >> 8) & 0xFF);
+	write_to_data_bus(ay, SHAPE_ENV_REG, shape & 0x0F);
 }
 
 /************************************************************************/

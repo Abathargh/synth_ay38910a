@@ -142,13 +142,13 @@ void play_parallax(const ay38910a_t * ay, const timer_t * timer) {
 	ay38910_channel_mode(ay, CHAN_ENABLE(CHA_TONE));
 
 	while(1) {
-		ay38910_set_amplitude(ay, CHANNEL_A, MAX_AMPL | AMPL_ENVELOPE_DISABLE);
+		ay38910_set_amplitude(ay, CHANNEL_A, MAX_AMPL & AMPL_ENV_DISABLE);
 		for(uint8_t i = 0; i < SIZE(parallax); i++) {
 			ay38910_play_note(ay, CHANNEL_A, parallax[i].note);
 			delay_ms(parallax[i].duration);
 		}
 
-		ay38910_set_amplitude(ay, CHANNEL_A, MAX_AMPL | AMPL_ENVELOPE_ENABLE);
+		ay38910_set_amplitude(ay, CHANNEL_A, MAX_AMPL | AMPL_ENV_ENABLE);
 		ay38910_set_envelope(ay, FUNC_ATTACK | FUNC_CONTINUE, 1000);
 		for(uint8_t j = 0; j < SIZE(verse); j++) {
 			ay38910_play_note(ay, CHANNEL_A, verse[j].note);

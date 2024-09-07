@@ -70,12 +70,12 @@
  * Macros related to amplitude and envelope management.
  */
 /**@{*/
-#define MIN_AMPL   0       /**< Minimum value for the amplitude           */
-#define MAX_AMPL   15      /**< Maximum value for the amplitude           */
-#define ENVELOPE_ENABLE 4  /**< Amplitude[4] is used to control envelopes */
+#define MIN_AMPL   0  /**< Minimum value for the amplitude           */
+#define MAX_AMPL   15 /**< Maximum value for the amplitude           */
+#define ENV_ENABLE 4  /**< Amplitude[4] is used to control envelopes */
 
-#define AMPL_ENVELOPE_DISABLE (~(1 << ENVELOPE_ENABLE)) /**< Envelope disable mask */
-#define AMPL_ENVELOPE_ENABLE  (1 << ENVELOPE_ENABLE)    /**< Envelope enable  mask */
+#define AMPL_ENV_DISABLE (~(1 << ENV_ENABLE)) /**< Envelope disable mask */
+#define AMPL_ENV_ENABLE  (1 << ENV_ENABLE)    /**< Envelope enable  mask */
 
 /** @def FREQ2SCALING(f)
  *
@@ -162,11 +162,10 @@ typedef enum {
 } channel_t;
 
 /**
- * @brief The available envelope shapes/cycle functions
+ * @brief The available envelope functions
  *
- * The envelope available through the PSG can have its
- * waveform modified by setting one or more shape bits.
- * Setting the shape bit to one activates it.
+ * The envelope available through the PSG can have its waveform modified by
+ * setting one or more shape bits. Setting the shape bit to one activates it.
  */
 typedef enum {
 	FUNC_HOLD      = 0x01, /**< Limits the shape to one cycle */
@@ -174,6 +173,34 @@ typedef enum {
 	FUNC_ATTACK    = 0x04, /**< Counts up if active, down otherwise */
 	FUNC_CONTINUE  = 0x08  /**< If not active, the counter resets and holds */
 } envelope_func_t;
+
+
+/**
+ * @brief The available envelope shapes
+ *
+ * These are the only possible correct combinations of the envelope functions
+ * available in the PSG. Note that then a noun is preceded by a 'C' it means
+ * that it holds the last state.
+ *
+ * ONE_CDOWN         \__________________
+ * DOWN_UP_CDOWN     /|_________________
+ * REVERSE_SAWTOOTH  \|\|\|\|\|\|\|\|\|\
+ * TRIANGULAR_OOP    \/\/\/\/\/\/\/\/\/\
+ * UP_DOWN_CUP       \/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+ * SAWTOOTH          /|/|/|/|/|/|/|/|/|/
+ * DOWN_CUP          /‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+ * TRIANGULAR        /\/\/\/\/\/\/\/\/\/
+ */
+typedef enum {
+	ONE_CDOWN        = 0x00,
+	DOWN_UP_CDOWN    = FUNC_ATTACK,
+	REVERSE_SAWTOOTH = FUNC_CONTINUE,
+	TRIANGULAR_OOP   = FUNC_CONTINUE | FUNC_ALTERNATE,
+	UP_DOWN_CUP      = FUNC_CONTINUE | FUNC_ALTERNATE | FUNC_HOLD,
+	SAWTOOTH         = FUNC_CONTINUE | FUNC_ATTACK,
+	DOWN_CUP         = FUNC_CONTINUE | FUNC_ATTACK | FUNC_HOLD,
+	TRIANGULAR       = FUNC_CONTINUE | FUNC_ATTACK
+} envelope_shape_t;
 
 
 /************************************************************************/
@@ -245,9 +272,9 @@ void ay38910_channel_mode(const ay38910a_t * ay, uint8_t mode);
  * through bits[0:3].
  *
  * @param chan the channel that will have the passed amplitude
- * @param amplitude the amplitude to set. Use with the enable/disable macros.
+ * @param amp  the amplitude to set. Use with the enable/disable macros.
  */
-void ay38910_set_amplitude(const ay38910a_t * ay, channel_t chan, uint8_t amplitude);
+void ay38910_set_amplitude(const ay38910a_t * ay, channel_t chan, uint8_t amp);
 
 /**
  * @brief Sets the envelope shape function bits and scales its frequency
@@ -261,8 +288,8 @@ void ay38910_set_amplitude(const ay38910a_t * ay, channel_t chan, uint8_t amplit
  * can be applied is 0.12-7.8k Hz.
  *
  * @param shape the shape of the envelop to enable
- * @param scaling the frequency of the envelope
+ * @param freq the frequency of the envelope
  */
-void ay38910_set_envelope(const ay38910a_t * ay, envelope_func_t shape, uint16_t scaling);
+void ay38910_set_envelope(const ay38910a_t * ay, uint8_t shape, uint16_t freq);
 
 #endif /* AY38910A_H_ */
