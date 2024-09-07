@@ -1,6 +1,6 @@
-/** @file logger.h
+/** @file usart.h
  *
- * This module implements a basic logger over USART.
+ * This module implements a basic interface over USART.
  */
 
 #ifndef LOGGER_H_
@@ -17,7 +17,7 @@
 /************************************************************************/
 
 #ifndef F_CPU
-#warning The logger module requires to define F_CPU, defaulting to 16MHz
+#warning The usart module requires to define F_CPU, defaulting to 16MHz
 #define F_CPU 16000000
 #endif
 
@@ -27,6 +27,8 @@
  * formula works for the ATMega644 too.
  */
 #define BAUD_VAL(b) (F_CPU / 16 / b - 1)
+
+#define USART_UNTIL_NEWLINE (0)
 
 /************************************************************************/
 /* Typedefs                                                             */
@@ -93,21 +95,37 @@ typedef enum {
 /************************************************************************/
 
 /**
- * @brief Initializes the USART perpipheral used by the logger module
+ * @brief Initializes the USART peripheral.
  * @param baud one of the supported baud rates
  */
-void logger_init(const usart_t * usart, baudrate_t baud);
+void usart_init(const usart_t * usart, baudrate_t baud);
 
 /**
- * @brief Prints a message through the initialized USART
+ * @brief Prints a message through the initialized USART.
  * @param msg the buffer containing the message
  */
-void logger_write(const usart_t * usart, const char *msg);
+void usart_write(const usart_t * usart, const char *msg);
 
 /**
  * @brief Reads data through the initialized USART
  * @param msg the buffer containing the message
  */
-void logger_read(const usart_t * usart, const char *msg);
+uint8_t usart_read(const usart_t * usart, char * buf, uint8_t len);
+
+/**
+ * @brief Reads a single byte through the initialized USART.
+ * @param msg the buffer containing the message
+ * @retval the received byte
+ */
+uint8_t usart_read_byte(const usart_t * usart);
+
+/**
+ * @brief Reads through the initialized USART, until a new line is found or
+ * the max length passed is reached. A len of USART_UNTIL_NEWLINE (= 0) means
+ * to just read until a new line character is received.
+ * @param  msg the buffer containing the message
+ * @retval the number of bytes read, excluding the new line character
+ */
+uint8_t usart_readline(const usart_t * usart, char * buf, uint8_t len);
 
 #endif
