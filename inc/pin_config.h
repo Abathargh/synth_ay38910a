@@ -47,6 +47,8 @@ void setup_with_cleared_mask(port_t * p, uint8_t mask);
 
 void as_input_pull_up_pin(port_t * p, uint8_t pin);
 
+void as_input_pull_up_port(port_t * p);
+
 void disable_pull_up(port_t * p, uint8_t pin);
 
 void set_pin(port_t * p, uint8_t pin);

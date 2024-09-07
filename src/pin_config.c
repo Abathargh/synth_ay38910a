@@ -51,6 +51,12 @@ void as_input_pull_up_pin(port_t * p, uint8_t pin) {
 }
 
 INLINED
+void as_input_pull_up_port(port_t * p) {
+	*p->direction = 0x00;
+	*p->output = 0xff;
+}
+
+INLINED
 void disable_pull_up(port_t * p, uint8_t pin)
 {
 	*p->output &= ~(1 << pin);
