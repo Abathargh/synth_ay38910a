@@ -29,6 +29,11 @@ typedef struct port_t {
 	map_io8 * input;
 } port_t;
 
+typedef struct pin_t {
+	port_t * port;
+	uint8_t   pin;
+} pin_t;
+
 /************************************************************************/
 /* Public functions                                                     */
 /************************************************************************/

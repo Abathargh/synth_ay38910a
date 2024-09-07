@@ -73,6 +73,7 @@
 #define MIN_AMPL   0  /**< Minimum value for the amplitude           */
 #define MAX_AMPL   15 /**< Maximum value for the amplitude           */
 #define ENV_ENABLE 4  /**< Amplitude[4] is used to control envelopes */
+#define SHAPE_NUM  8  /**< Number of shapes supported by the PSG     */
 
 #define AMPL_ENV_DISABLE (~(1 << ENV_ENABLE)) /**< Envelope disable mask */
 #define AMPL_ENV_ENABLE  (1 << ENV_ENABLE)    /**< Envelope enable  mask */
@@ -182,14 +183,14 @@ typedef enum {
  * available in the PSG. Note that then a noun is preceded by a 'C' it means
  * that it holds the last state.
  *
- * ONE_CDOWN         \__________________
- * DOWN_UP_CDOWN     /|_________________
- * REVERSE_SAWTOOTH  \|\|\|\|\|\|\|\|\|\
- * TRIANGULAR_OOP    \/\/\/\/\/\/\/\/\/\
- * UP_DOWN_CUP       \/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
- * SAWTOOTH          /|/|/|/|/|/|/|/|/|/
- * DOWN_CUP          /‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
- * TRIANGULAR        /\/\/\/\/\/\/\/\/\/
+ * - ONE_CDOWN         \__________________
+ * - DOWN_UP_CDOWN     /|_________________
+ * - REVERSE_SAWTOOTH  \|\|\|\|\|\|\|\|\|\
+ * - TRIANGULAR_OOP    \/\/\/\/\/\/\/\/\/\
+ * - UP_DOWN_CUP       \/‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+ * - SAWTOOTH          /|/|/|/|/|/|/|/|/|/
+ * - DOWN_CUP          /‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+ * - TRIANGULAR        /\/\/\/\/\/\/\/\/\/
  */
 typedef enum {
 	ONE_CDOWN        = 0x00,
