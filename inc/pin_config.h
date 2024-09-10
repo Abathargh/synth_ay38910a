@@ -80,6 +80,8 @@ void toggle_pin(port_t * p, uint8_t pin);
 
 uint8_t read_pin(port_t * p, uint8_t pin);
 
+void put_hi_port(port_t * p, uint8_t val);
+
 void set_port(port_t * p, uint8_t val);
 
 void set_port_mask(port_t * p, uint8_t mask);

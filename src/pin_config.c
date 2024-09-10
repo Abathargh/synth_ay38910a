@@ -89,6 +89,11 @@ void set_port(port_t * p, uint8_t val) {
 }
 
 INLINED
+void put_hi_port(port_t * p, uint8_t val) {
+	*p->output = (*p->output & 0x0f) | (val & 0xf0);
+}
+
+INLINED
 void set_port_mask(port_t * p, uint8_t mask) {
 	*p->output |= mask;
 }
