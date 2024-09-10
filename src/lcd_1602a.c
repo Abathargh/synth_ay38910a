@@ -63,22 +63,22 @@ void lcd1602a_init(const lcd1602a_t * lcd, const timer_t * t)
 	delay_ms(2000);
 
 	// Set the interface to 8-bit waiting > 4.1 ms
-	set_port_mask(lcd->bus_port, FUNCTION_SET_8B1L);
+	put_hi_port(lcd->bus_port, FUNCTION_SET_8B1L);
 	forward_data(lcd);
 	delay_ms(16);
 
 	// Set the interface to 8-bit waiting > 100 us
-	set_port_mask(lcd->bus_port, FUNCTION_SET_8B1L);
+	put_hi_port(lcd->bus_port, FUNCTION_SET_8B1L);
 	forward_data(lcd);
 	delay_us(400);
 
 	// Set the interface to 8-bit waiting > 100 us
-	set_port_mask(lcd->bus_port, FUNCTION_SET_8B1L);
+	put_hi_port(lcd->bus_port, FUNCTION_SET_8B1L);
 	forward_data(lcd);
 	delay_us(400);
 
 	// Set the interface to 4-bit 1 line waiting > 100 us
-	set_port_mask(lcd->bus_port, FUNCTION_SET_4B1L);
+	put_hi_port(lcd->bus_port, FUNCTION_SET_4B1L);
 	forward_data(lcd);
 	delay_us(160);
 
@@ -132,10 +132,10 @@ void lcd1602a_putchar(const lcd1602a_t * lcd, unsigned char c)
 {
 	set_pin(lcd->ctl_port, lcd->register_sel);
 
-	set_port_mask(lcd->bus_port, c & 0xf0);
+	put_hi_port(lcd->bus_port, c & 0xf0);
 	forward_data(lcd);
 
-	set_port_mask(lcd->bus_port, (c << 4) & 0xf0);
+	put_hi_port(lcd->bus_port, (c << 4) & 0xf0);
 	forward_data(lcd);
 
 	delay_us(2000);
@@ -173,10 +173,10 @@ static void send_command(const lcd1602a_t * lcd, unsigned char cmd)
 {
 	clear_pin(lcd->ctl_port, lcd->register_sel);
 
-	set_port_mask(lcd->bus_port, cmd & 0xf0);
+	put_hi_port(lcd->bus_port, cmd & 0xf0);
 	forward_data(lcd);
 
-	set_port_mask(lcd->bus_port, (cmd << 4) & 0xf0);
+	put_hi_port(lcd->bus_port, (cmd << 4) & 0xf0);
 	forward_data(lcd);
 
 	delay_us(2000);
