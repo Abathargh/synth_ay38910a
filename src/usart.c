@@ -10,11 +10,11 @@
 
 void usart_init(const usart_t * usart, baudrate_t baud) {
   *usart->baud_hi = (uint8_t)(baud >> 8);
-	*usart->baud_hi = (uint8_t) baud;
-  *usart->ctl_b = ctlb_rxen | ctlb_txen | ctlb_rxcie;
+	*usart->baud_lo = (uint8_t) baud;
+  *usart->ctl_b = (ctlb_rxen) | (ctlb_txen) | (ctlb_rxcie);
 
   // 8-bit 1-stop bit
-  *usart->ctl_c = ctlc_ucsz1 | ctlc_ucsz0;
+  *usart->ctl_c = (ctlc_ucsz1) | (ctlc_ucsz0);
 }
 
 void usart_write(const usart_t * usart, const char * msg) {
