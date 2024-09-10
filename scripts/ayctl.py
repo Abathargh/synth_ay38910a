@@ -1,3 +1,5 @@
+import time
+
 from serial.tools.list_ports import comports
 from collections import OrderedDict
 from typing import List
@@ -32,7 +34,7 @@ def usage():
     print(help_msg)
 
 
-def validate_input(amp: str, octave: str, shape: str) -> (bool, str):
+def validate(amp: str, octave: str, shape: str) -> (bool, bytes, bytes, bytes):
     amp = int(amp)
     octave = int(octave)
     try:
@@ -45,18 +47,24 @@ def validate_input(amp: str, octave: str, shape: str) -> (bool, str):
                 shape = i
                 break
 
-    return (0 <= amp <= 15) or (0 <= octave <= 8) or shape_ok, str(shape)
+    def to_hex_str(n: int) -> bytes:
+        return f"{n:x}".encode("ascii")
+
+    if (0 <= amp <= 15) or (0 <= octave <= 8) or shape_ok:
+        return True, to_hex_str(amp), to_hex_str(octave), to_hex_str(shape)
+
+    return False, "", "", ""
 
 
 def list_devices() -> List[str]:
     ret = []
     for d in comports():
-        ret.append(f"{d.device} ({d.manufacturer}, PID: {d.pid:04x}")
+        ret.append(f"{d.device} ({d.manufacturer}, PID: {d.pid:04x})")
     return ret
 
 
 def main():
-    ok_req = re.compile(r"\s*[0-9]{1,2}\s*,\s*[0-9]{1,2}\s*,\s*[0-9a-zA-Z]+\s*")
+    ok_req = re.compile(r"^\s*[0-9]{1,2}\s*,\s*[0-9]{1,2}\s*,\s*[0-9a-zA-Z]+\s*$")
     dev = None
     port = ""
     try:
@@ -65,7 +73,7 @@ def main():
             print("No device connected, exiting")
             sys.exit(0)
 
-        print("Choose a device from the list, by typing its number:")
+        print("Choose a device from the list, by typing its id:")
         while True:
             for i, d in enumerate(devs):
                 print(f"  [{i}] {d}")
@@ -73,14 +81,14 @@ def main():
             try:
                 dev_num = int(input(">>> "))
                 if not (0 <= dev_num <= len(devs)):
-                    print("Select a valid number")
+                    print("Select a valid id")
                     continue
                 port = devs[dev_num].split(" ")[0]
                 break
             except ValueError:
                 print("Select a valid number")
 
-        dev = serial.Serial(port=port, baudrate=9600, bytesize=8, stopbits=1)
+        dev = serial.Serial(port=port, baudrate=9600, bytesize=8, stopbits=1, timeout=2)
         print("Connected, input a frame, use 'h' or 'help' for more info")
         while True:
             req = input(">>> ").lower().strip()
@@ -98,20 +106,17 @@ def main():
             octave = octave.strip()
             shape = shape.strip()
 
-            is_valid_input, shape = validate_input(amp, octave, shape)
+            ok, amp, octave, shape = validate(amp, octave, shape)
 
-            if not is_valid_input:
+            if not ok:
                 print("Invalid format, use 'h' or 'help' for more info")
                 sys.exit(1)
 
-            amp = f"{amp:0<2}".encode("ascii")
-            octave = octave.encode("ascii")
-            shape = shape.encode("ascii")
-
-            frame = struct.pack("<2sccc", amp, octave, shape, b'\n')
+            frame = struct.pack("<ccc", amp, octave, shape)
             dev.write(frame)
             ret = dev.readline()
             print(ret)
+            print(struct.unpack("<cccc", ret))
     except serial.SerialException as se:
         print(f"Serial exception: {se}")
     except KeyboardInterrupt:
