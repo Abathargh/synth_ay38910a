@@ -11,10 +11,26 @@
 /************************************************************************/
 
 #include <stdint.h>
+#include <avr/io.h>
 
 /************************************************************************/
 /* Defines                                                              */
 /************************************************************************/
+
+#define IO_PORT_A {&DDRA, &PORTA, &PINA}
+#define IO_PORT_B {&DDRB, &PORTB, &PINB}
+#define IO_PORT_C {&DDRC, &PORTC, &PINC}
+#define IO_PORT_D {&DDRD, &PORTD, &PIND}
+
+#if defined(__AVR_ATmega2560__)
+#define IO_PORT_E {&DDRE, &PORTE, &PINE}
+#define IO_PORT_F {&DDRF, &PORTF, &PINF}
+#define IO_PORT_G {&DDRG, &PORTG, &PING}
+#define IO_PORT_H {&DDRH, &PORTH, &PINH}
+#define IO_PORT_J {&DDRJ, &PORTJ, &PINJ}
+#define IO_PORT_K {&DDRK, &PORTK, &PINK}
+#define IO_PORT_L {&DDRL, &PORTL, &PINL}
+#endif
 
 /************************************************************************/
 /* Typedefs                                                             */
