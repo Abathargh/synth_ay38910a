@@ -15,7 +15,7 @@
 
 #define INLINED inline __attribute__((always_inline))
 
-#define CONTRAST_DT 220
+#define CONTRAST_DT 120
 
 #define NUM_ROWS    2
 #define NUM_COLS    16
@@ -198,14 +198,14 @@ void forward_data(const lcd1602a_t * lcd)
  * Initializes the a PWM signal to be used to control the contrast
  * of the lcd display.
  */
-static void init_contrast(const timer_t * t)
-{
+static void init_contrast(const timer_t * t) {
 	as_output_pin(t->ocr_a_port, t->ocr_a_pin);
 
 	// N.B. if using 2 rows, you need a higher V for the same
 	// contrast level
 	*t->ocr_a_16 = CONTRAST_DT; // 16-bit register: ocr_a_16 active
-	*t->tccr_a = 0x83;          // PWM, Phase Correct, 10-bit 0x03FF, Clear OCnA/OCnB on Compare Match when up-
-		                          // counting. Set OCnA/OCnB on Compare Match when down-counting.
+	*t->tccr_a =  0x83;          // PWM, Phase Correct, 10-bit 0x03FF, Clear
+	                            // OCnA/OCnB on Compare Match when up-counting.
+	                            // Set OCnA/OCnB on match when down-counting.
 	*t->tccr_b = 0x01;          // No prescaling
 }

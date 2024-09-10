@@ -59,7 +59,7 @@
 static void inactive_mode(const ay38910a_t * ay);
 static void latch_address_mode(const ay38910a_t * ay);
 static void write_mode(const ay38910a_t * ay);
-static void write_to_data_bus(const ay38910a_t * ay, uint8_t address, uint8_t data);
+static void write_to_data_bus(const ay38910a_t * ay, uint8_t addr, uint8_t d);
 static void oc2a_pin_config(const timer_t * t);
 
 /************************************************************************/
