@@ -39,7 +39,7 @@ def validate(amp: str, octave: str, shape: str) -> (bool, bytes, bytes, bytes):
     octave = int(octave)
     try:
         shape = int(shape)
-        shape_ok = 0 <= shape <= len(shapes)
+        shape_ok = 0 <= shape < len(shapes)
     except ValueError:
         shape_ok = shape in shapes
         for i, s in enumerate(shapes):
@@ -50,7 +50,7 @@ def validate(amp: str, octave: str, shape: str) -> (bool, bytes, bytes, bytes):
     def to_hex_str(n: int) -> bytes:
         return f"{n:x}".encode("ascii")
 
-    if (0 <= amp <= 15) or (0 <= octave <= 8) or shape_ok:
+    if (0 <= amp <= 15) and (0 <= octave <= 8) and shape_ok:
         return True, to_hex_str(amp), to_hex_str(octave), to_hex_str(shape)
 
     return False, "", "", ""
@@ -64,7 +64,7 @@ def list_devices() -> List[str]:
 
 
 def main():
-    ok_req = re.compile(r"^\s*[0-9]{1,2}\s*,\s*[0-9]{1,2}\s*,\s*[0-9a-zA-Z]+\s*$")
+    ok_req = re.compile(r"^\s*[0-9]{1,2}\s*,\s*[0-9]\s*,\s*[0-7a-zA-Z]+\s*$")
     dev = None
     port = ""
     try:
@@ -110,7 +110,7 @@ def main():
 
             if not ok:
                 print("Invalid format, use 'h' or 'help' for more info")
-                sys.exit(1)
+                continue
 
             frame = struct.pack("<ccc", amp, octave, shape)
             dev.write(frame)
