@@ -15,7 +15,7 @@
 
 #define INLINED inline __attribute__((always_inline))
 
-#define CONTRAST_DT 120
+#define CONTRAST_DT 400
 
 #define NUM_ROWS    2
 #define NUM_COLS    16
@@ -31,6 +31,7 @@
 #define FUNCTION_SET_4B1L 0x20
 #define FUNCTION_SET_4B2L 0x28
 #define FUNCTION_SET_8B1L 0x30
+#define SET_CGRAM_ADDR    0x40
 #define SET_DDRAM_ADDR    0x80
 
 /************************************************************************/
@@ -40,12 +41,13 @@
 static void forward_data(const lcd1602a_t * lcd);
 static void init_contrast(const timer_t * t);
 static void send_command(const lcd1602a_t * lcd, unsigned char cmd);
+static void send_data(const lcd1602a_t * lcd, unsigned char cmd);
 
 /************************************************************************/
 /* Private variables                                                    */
 /************************************************************************/
 
-static const uint8_t ROW_OFFSETS[] = {ROW0_OFFSET, ROW1_OFFSET};
+static const uint8_t offsets[] = {ROW0_OFFSET, ROW1_OFFSET};
 
 /************************************************************************/
 /* Function implementations                                             */
@@ -88,7 +90,10 @@ void lcd1602a_init(const lcd1602a_t * lcd, const timer_t * t)
 	send_command(lcd, DISPLAY_OFF);
 	send_command(lcd, CLEAR_DISPLAY);
 	send_command(lcd, ENTRY_SET_DEF_LAT);
-	init_contrast(t);
+
+	if(t != NULL) {
+		init_contrast(t);
+	}
 }
 
 void lcd1602a_display_on(const lcd1602a_t * lcd)
@@ -119,26 +124,18 @@ void lcd1602_clear_row(const lcd1602a_t * lcd, uint8_t row)
 	 */
 	lcd1602a_set_cursor(lcd, row, 0);
 	for(size_t idx = 0; idx < NUM_COLS; idx++) {
-		lcd1602a_putchar(lcd, ' ');
+		lcd1602a_put_char(lcd, ' ');
 	}
 }
 
 void lcd1602a_set_cursor(const lcd1602a_t * lcd, uint8_t x, uint8_t y)
 {
-	send_command(lcd, SET_DDRAM_ADDR | ((y % NUM_COLS) + ROW_OFFSETS[x % NUM_ROWS]));
+	send_command(lcd, SET_DDRAM_ADDR | ((y % NUM_COLS) + offsets[x % NUM_ROWS]));
 }
 
-void lcd1602a_putchar(const lcd1602a_t * lcd, unsigned char c)
+void lcd1602a_put_char(const lcd1602a_t * lcd, unsigned char c)
 {
-	set_pin(lcd->ctl_port, lcd->register_sel);
-
-	put_hi_port(lcd->bus_port, c & 0xf0);
-	forward_data(lcd);
-
-	put_hi_port(lcd->bus_port, (c << 4) & 0xf0);
-	forward_data(lcd);
-
-	delay_us(2000);
+	send_data(lcd, c);
 }
 
 void lcd1602a_print(const lcd1602a_t * lcd, const char *str)
@@ -157,7 +154,23 @@ void lcd1602a_print_row(const lcd1602a_t * lcd, const char *str, uint8_t row)
 	lcd1602_clear_row(lcd, row);
 	lcd1602a_set_cursor(lcd, row, 0);
 	for(; (idx < len) && (idx < NUM_COLS); idx++)  {
-		lcd1602a_putchar(lcd, str[idx]);
+		lcd1602a_put_char(lcd, str[idx]);
+	}
+}
+
+#define MAP_SIZE (8)
+
+void lcd1602a_new_char(const lcd1602a_t * lcd, uint8_t id, const char map[8]) {
+	/**
+	 * The lcd1602 has only 3-bits available to use for memorizing addresses,
+	 * so the id is limited to that. Also, when sending the command the first
+	 * three bits are reserved, so only the B[5:3] bits are used since there are
+	 * 6 bits for addressing.
+	 */
+	id &= 7;
+	send_command(lcd, SET_CGRAM_ADDR | id << 3);
+	for(uint8_t i = 0; i < MAP_SIZE; i++) {
+		send_data(lcd, map[i]);
 	}
 }
 
@@ -172,6 +185,23 @@ void lcd1602a_print_row(const lcd1602a_t * lcd, const char *str, uint8_t row)
 static void send_command(const lcd1602a_t * lcd, unsigned char cmd)
 {
 	clear_pin(lcd->ctl_port, lcd->register_sel);
+
+	put_hi_port(lcd->bus_port, cmd & 0xf0);
+	forward_data(lcd);
+
+	put_hi_port(lcd->bus_port, (cmd << 4) & 0xf0);
+	forward_data(lcd);
+
+	delay_us(2000);
+}
+
+/**
+ * Sends a command to the lcd display
+ * @param cmd the command to actuate
+ */
+static void send_data(const lcd1602a_t * lcd, unsigned char cmd)
+{
+	set_pin(lcd->ctl_port, lcd->register_sel);
 
 	put_hi_port(lcd->bus_port, cmd & 0xf0);
 	forward_data(lcd);
