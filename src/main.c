@@ -2,14 +2,17 @@
 #include <ay38910a.h>
 #include <settings.h>
 #include <avr/io.h>
+#include <stdio.h>
 #include <delay.h>
+
 
 #define SIZE(x) ((uint8_t)(sizeof(x)/sizeof(x[0])))
 
 #if defined(__AVR_ATmega2560__)
-static port_t key_port1 = IO_PORT_K;
-static port_t key_port2 = IO_PORT_B;
-static port_t lcd_port  = IO_PORT_C;
+static port_t key_port1     = IO_PORT_K;
+static port_t key_port2     = IO_PORT_B;
+static port_t lcd_bus_port  = IO_PORT_C;
+static port_t lcd_ctl_port  = IO_PORT_L;
 #endif
 
 static const timer_t * timer2 = &(timer_t) {
@@ -50,8 +53,8 @@ static const ay38910a_t * ay = &(ay38910a_t) {
 };
 
 static const lcd1602a_t * lcd = &(lcd1602a_t) {
-	.ctl_port     = &lcd_port,
-	.bus_port     = &lcd_port,
+	.ctl_port     = &lcd_ctl_port,
+	.bus_port     = &lcd_bus_port,
 	.register_sel = 0,
 	.enable       = 1
 };
@@ -133,19 +136,46 @@ void close_channel(key_t * key, uint8_t * state) {
 	key->chan = UNMAPPED_CHAN;
 }
 
-uint8_t env_shapes[] = {
-	0,
-	REVERSE_SAWTOOTH,
-	TRIANGULAR_OOP,
-	UP_DOWN_CUP,
-	SAWTOOTH,
-	DOWN_CUP,
-	TRIANGULAR,
+
+
+struct shape_meta {
+	uint8_t value;
+	const char * figure;
+} env_shapes[] = {
+	{0,                "________________"},
+	{REVERSE_SAWTOOTH, "\x7|\x7|\x7|\x7|\x7|\x7|\x7|\x7|"},
+	{TRIANGULAR_OOP,   "\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7/"},
+	{UP_DOWN_CUP,      "\x7/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"},
+	{SAWTOOTH,         "/|/|/|/|/|/|/|/|"},
+	{DOWN_CUP,         "/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"},
+	{TRIANGULAR,       "/\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7"},
 };
 
+const char b_slash[] = {0, 0x10, 0x8, 0x4, 0x2, 0x1, 0, 0};
+const char overline[] = {0x1f, 0, 0, 0, 0, 0, 0, 0};
+
+void print_settings(void) {
+	char buf[17] = {0};
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+	snprintf(buf, 16, "amp: %d oct: %d", settings->amplitude, settings->octave);
+#pragma GCC diagnostic pop
+	lcd1602a_print_row(lcd, buf, 0);
+}
+void print_shape_figure(const struct shape_meta shape) {
+	char buf[17] = {0};
+	snprintf(buf, 16, "%s", shape.figure);
+	lcd1602a_print_row(lcd, buf, 1);
+}
 
 int main(void) {
 	lcd1602a_init(lcd, timer5);
+	lcd1602a_display_on(lcd);
+	lcd1602a_clear(lcd);
+	lcd1602a_home(lcd);
+
+	lcd1602a_new_char(lcd, 6, overline);
+	lcd1602a_new_char(lcd, 7, b_slash);
 
 	ay38910_init(ay, timer2);
 	stg_init();
@@ -156,15 +186,22 @@ int main(void) {
 
 	uint8_t state   = 0xff;
 
+	print_settings();
+	print_shape_figure(env_shapes[0]);
+
 	for(;;) {
 		if(stg_received_data()) {
 			stg_update(settings);
 			stg_send_frame(settings);
+			print_settings();
 			if(settings->env_shape == 0) {
 				settings->amplitude &= AMPL_ENV_DISABLE;
+				print_shape_figure(env_shapes[0]);
 			} else {
+				struct shape_meta shape = env_shapes[settings->env_shape];
 				settings->amplitude |= AMPL_ENV_ENABLE;
-				ay38910_set_envelope(ay, env_shapes[settings->env_shape], 1000);
+				ay38910_set_envelope(ay, shape.value, 1000);
+				print_shape_figure(shape);
 			}
 		}
 
