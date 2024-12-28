@@ -1,5 +1,3 @@
-import time
-
 from serial.tools.list_ports import comports
 from collections import OrderedDict
 from typing import List
