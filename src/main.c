@@ -1,9 +1,8 @@
 #include <lcd_1602a.h>
 #include <ay38910a.h>
 #include <settings.h>
-#include <avr/io.h>
+#include <avr/interrupt.h>
 #include <stdio.h>
-#include <delay.h>
 
 
 #define SIZE(x) ((uint8_t)(sizeof(x)/sizeof(x[0])))
@@ -12,7 +11,7 @@
 static port_t key_port1     = IO_PORT_K;
 static port_t key_port2     = IO_PORT_B;
 static port_t lcd_bus_port  = IO_PORT_C;
-static port_t lcd_ctl_port  = IO_PORT_L;
+static port_t lcd_ctl_port  = IO_PORT_C;
 #endif
 
 static const timer_t * timer2 = &(timer_t) {
@@ -94,26 +93,13 @@ static key_t keys[] = {
 };
 
 
-#define DEBOUNCE_RES (8)
-
 static settings_t * settings = &(settings_t){
+	.nav_pin={.port=&(port_t)IO_PORT_L, .pin=0},
+	.sel_pin={.port=&(port_t)IO_PORT_L, .pin=1},
 	.amplitude = AMP_DEF,
 	.octave    = OCT_DEF,
 	.env_shape = SHP_DEF,
 };
-
-uint8_t read_debounced(pin_t p) {
-	uint8_t acc = 0;
-	uint8_t ctr;
-	do {
-		ctr = 0;
-		while (ctr++ < DEBOUNCE_RES) {
-			acc = (acc << 1) | (read_pin(p.port, p.pin));
-			delay_ms(1);
-		}
-	} while(acc != 0x00 && acc != 0xff);
-	return acc;
-}
 
 
 void play_note(key_t * key, uint8_t note, uint8_t * state) {
@@ -137,7 +123,6 @@ void close_channel(key_t * key, uint8_t * state) {
 }
 
 
-
 struct shape_meta {
 	uint8_t value;
 	const char * figure;
@@ -145,7 +130,8 @@ struct shape_meta {
 	{0,                "________________"},
 	{REVERSE_SAWTOOTH, "\x7|\x7|\x7|\x7|\x7|\x7|\x7|\x7|"},
 	{TRIANGULAR_OOP,   "\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7/"},
-	{UP_DOWN_CUP,      "\x7/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"},
+	{UP_DOWN_CUP,      "\x7/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"
+	                   "\x6\x6\x6\x6"},
 	{SAWTOOTH,         "/|/|/|/|/|/|/|/|"},
 	{DOWN_CUP,         "/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"},
 	{TRIANGULAR,       "/\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7"},
@@ -155,16 +141,15 @@ const char b_slash[] = {0, 0x10, 0x8, 0x4, 0x2, 0x1, 0, 0};
 const char overline[] = {0x1f, 0, 0, 0, 0, 0, 0, 0};
 
 void print_settings(void) {
-	char buf[17] = {0};
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-truncation"
-	snprintf(buf, 16, "amp: %d oct: %d", settings->amplitude, settings->octave);
-#pragma GCC diagnostic pop
+	static char buf[20] = {0};
+	snprintf(buf, 20, "amp: %d oct: %d", settings->amplitude, settings->octave);
 	lcd1602a_print_row(lcd, buf, 0);
 }
+
+
 void print_shape_figure(const struct shape_meta shape) {
-	char buf[17] = {0};
-	snprintf(buf, 16, "%s", shape.figure);
+	static char buf[20] = {0};
+	snprintf(buf, 20, "%s", shape.figure);
 	lcd1602a_print_row(lcd, buf, 1);
 }
 
@@ -191,7 +176,7 @@ int main(void) {
 
 	for(;;) {
 		if(stg_received_data()) {
-			stg_update(settings);
+			stg_update_from_frame(settings);
 			stg_send_frame(settings);
 			print_settings();
 			if(settings->env_shape == 0) {

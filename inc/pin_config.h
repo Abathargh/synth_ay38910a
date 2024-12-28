@@ -92,4 +92,6 @@ uint8_t read_port(port_t * p);
 
 uint8_t read_port_mask(port_t * p, uint8_t mask);
 
+uint8_t read_debounced(pin_t p);
+
 #endif /* PIN_CONFIG_H_ */

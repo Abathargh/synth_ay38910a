@@ -3,12 +3,15 @@
 /************************************************************************/
 
 #include "pin_config.h"
+#include <delay.h>
 
 /************************************************************************/
 /* Defines                                                              */
 /************************************************************************/
 
 #define INLINED __attribute__((always_inline)) inline
+
+#define DEBOUNCE_RES (8)
 
 /************************************************************************/
 /* Function implementations                                             */
@@ -111,4 +114,17 @@ uint8_t read_port(port_t * p) {
 INLINED
 uint8_t read_port_mask(port_t * p, uint8_t mask) {
 	return *p->input & mask;
+}
+
+uint8_t read_debounced(pin_t p) {
+	uint8_t acc = 0;
+	uint8_t ctr;
+	do {
+		ctr = 0;
+		while (ctr++ < DEBOUNCE_RES) {
+			acc = (acc << 1) | (read_pin(p.port, p.pin));
+			delay_ms(1);
+		}
+	} while(acc != 0x00 && acc != 0xff);
+	return acc;
 }
