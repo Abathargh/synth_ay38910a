@@ -2,7 +2,6 @@
 #include <ay38910a.h>
 #include <settings.h>
 #include <avr/interrupt.h>
-#include <stdio.h>
 
 
 #define SIZE(x) ((uint8_t)(sizeof(x)/sizeof(x[0])))
@@ -92,10 +91,12 @@ static key_t keys[] = {
 #endif
 };
 
-
-static settings_t * settings = &(settings_t){
+static settings_ctl_t * sctl =  &(settings_ctl_t){
 	.nav_pin={.port=&(port_t)IO_PORT_L, .pin=0},
 	.sel_pin={.port=&(port_t)IO_PORT_L, .pin=1},
+};
+
+static settings_t * settings = &(settings_t){
 	.amplitude = AMP_DEF,
 	.octave    = OCT_DEF,
 	.env_shape = SHP_DEF,
@@ -122,36 +123,20 @@ void close_channel(key_t * key, uint8_t * state) {
 	key->chan = UNMAPPED_CHAN;
 }
 
-
-struct shape_meta {
-	uint8_t value;
-	const char * figure;
-} env_shapes[] = {
-	{0,                "________________"},
-	{REVERSE_SAWTOOTH, "\x7|\x7|\x7|\x7|\x7|\x7|\x7|\x7|"},
-	{TRIANGULAR_OOP,   "\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7/"},
-	{UP_DOWN_CUP,      "\x7/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"
-	                   "\x6\x6\x6\x6"},
-	{SAWTOOTH,         "/|/|/|/|/|/|/|/|"},
-	{DOWN_CUP,         "/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"},
-	{TRIANGULAR,       "/\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7"},
-};
+void apply_filter(void) {
+	if(settings->env_shape == 0) {
+		settings->amplitude &= AMPL_ENV_DISABLE;
+		stg_print_shape(lcd, settings);
+	} else {
+		uint8_t shape_value = stg_get_shape_value(settings);
+		settings->amplitude |= AMPL_ENV_ENABLE;
+		ay38910_set_envelope(ay, shape_value, 1000);
+		stg_print_shape(lcd, settings);
+	}
+}
 
 const char b_slash[] = {0, 0x10, 0x8, 0x4, 0x2, 0x1, 0, 0};
 const char overline[] = {0x1f, 0, 0, 0, 0, 0, 0, 0};
-
-void print_settings(void) {
-	static char buf[20] = {0};
-	snprintf(buf, 20, "amp: %d oct: %d", settings->amplitude, settings->octave);
-	lcd1602a_print_row(lcd, buf, 0);
-}
-
-
-void print_shape_figure(const struct shape_meta shape) {
-	static char buf[20] = {0};
-	snprintf(buf, 20, "%s", shape.figure);
-	lcd1602a_print_row(lcd, buf, 1);
-}
 
 int main(void) {
 	lcd1602a_init(lcd, timer5);
@@ -163,7 +148,7 @@ int main(void) {
 	lcd1602a_new_char(lcd, 7, b_slash);
 
 	ay38910_init(ay, timer2);
-	stg_init();
+	stg_init(sctl);
 
 	for(int i = 0; i < SIZE(keys); i++) {
 		as_input_pull_up_pin(keys[i].pin.port, keys[i].pin.pin);
@@ -171,23 +156,19 @@ int main(void) {
 
 	uint8_t state   = 0xff;
 
-	print_settings();
-	print_shape_figure(env_shapes[0]);
+	stg_print_settings(lcd, settings);
+	stg_print_shape(lcd, settings);
 
 	for(;;) {
 		if(stg_received_data()) {
 			stg_update_from_frame(settings);
 			stg_send_frame(settings);
-			print_settings();
-			if(settings->env_shape == 0) {
-				settings->amplitude &= AMPL_ENV_DISABLE;
-				print_shape_figure(env_shapes[0]);
-			} else {
-				struct shape_meta shape = env_shapes[settings->env_shape];
-				settings->amplitude |= AMPL_ENV_ENABLE;
-				ay38910_set_envelope(ay, shape.value, 1000);
-				print_shape_figure(shape);
-			}
+			stg_print_settings(lcd, settings);
+			apply_filter();
+		}
+
+		if(stg_menu_loop(lcd, sctl, settings)) {
+			apply_filter();
 		}
 
 		for(int i = 0; i < SIZE(keys); i++) {

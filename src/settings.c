@@ -44,9 +44,6 @@ static volatile char    recv_buf[BUF_SIZE] = {0};
 static volatile uint8_t idx                =  0;
 static volatile uint8_t pot_data           =  0;
 
-
-static char lcd_buf[LCD_BUF_SIZE] = {0};
-
 static const usart_t * serial = &(usart_t) {
 	.baud_hi=&UBRR0H,
 	.baud_lo=&UBRR0L,
@@ -60,9 +57,9 @@ static const usart_t * serial = &(usart_t) {
 /* Function implementations                                             */
 /************************************************************************/
 
-void stg_init(void) {
-	// as_input_pull_up_pin(stg->nav_pin.port, stg->nav_pin.pin);
-	// as_input_pull_up_pin(stg->sel_pin.port, stg->sel_pin.pin);
+void stg_init(settings_ctl_t * sctl) {
+	 as_input_pull_up_pin(sctl->nav_pin.port, sctl->nav_pin.pin);
+	 as_input_pull_up_pin(sctl->sel_pin.port, sctl->sel_pin.pin);
 	usart_init(serial, BAUD_VAL(9600));
 	adc_init();
 	sei();
@@ -97,11 +94,6 @@ uint8_t stg_received_data(void) {
 	return idx == BUF_SIZE;
 }
 
-void stg_print_settings(const lcd1602a_t * lcd, const settings_t * s) {
-	snprintf(lcd_buf, LCD_BUF_SIZE, "amp: %d oct: %d", s->amplitude, s->octave);
-	lcd1602a_print_row(lcd, lcd_buf, 0);
-}
-
 void stg_enable_potentiometer(void)
 {
 	ADCSRA |= (1 << ADEN);
@@ -118,37 +110,109 @@ uint8_t stg_read_potentiometer(void)
 	return pot_data;
 }
 
-//static uint8_t menu_cardinality[] = {
-//	[MENU_AMPLITUDE] = AMPLITUDE_CARD,
-//	[MENU_OCTAVE]    = OCTAVE_CARD,
-//	[MENU_WAVEFORM]  = WAVEFORM_CARD,
-//};
+#define ADC_MAX (255)
 
-void stg_menu_loop(settings_t * stg) {
-	uint8_t nav_pressed = read_debounced(stg->nav_pin) == 0x00;
-	uint8_t sel_pressed = read_debounced(stg->sel_pin) == 0x00;
+static uint16_t menu_cardinality[] = {
+	[MENU_AMPLITUDE] = AMPLITUDE_CARD,
+	[MENU_OCTAVE]    = OCTAVE_CARD,
+	[MENU_WAVEFORM]  = WAVEFORM_CARD,
+};
 
-	static uint8_t last_nav_pressed = 0xff;
-	static uint8_t last_sel_pressed = 0xff;
+bool stg_menu_loop(const lcd1602a_t * lcd, settings_ctl_t * ctl, settings_t * stg) {
+	static enum menu_state selected = MENU_AMPLITUDE;
+	static settings_t      in_stg   = {0};
+	static bool in_menu             = false;
+	static bool last_nav_pressed    = false;
+	static bool last_sel_pressed    = false;
 
-	if(nav_pressed && last_nav_pressed != 0x00) {
-		stg->selected = (stg->selected + 1) % 3;
-		last_nav_pressed = 0x00;
-	} else {
-		last_nav_pressed = 0xff;
+	uint8_t nav_pressed = read_debounced(ctl->nav_pin) == 0x00;
+	uint8_t sel_pressed = read_debounced(ctl->sel_pin) == 0x00;
+
+	if(sel_pressed && !last_sel_pressed) {
+		in_menu = false;
+		*stg = in_stg;
+		last_sel_pressed = sel_pressed;
+		stg_disable_potentiometer();
+		return true;
 	}
+	last_sel_pressed = sel_pressed;
 
-	if(sel_pressed && last_sel_pressed != 0x00) {
-		stg->selected = (stg->selected + 1) % 3;
-		last_sel_pressed = 0x00;
-	} else {
-		last_sel_pressed = 0xff;
+
+	if(nav_pressed && !last_nav_pressed) {
+		if(!in_menu) {
+			in_menu = true;
+			stg_enable_potentiometer();
+			in_stg = *stg;
+		}
+		selected = (selected + 1) % 3;
 	}
+	last_nav_pressed = nav_pressed;
 
+	if(in_menu) {
+		uint8_t selection = ((uint16_t)pot_data * menu_cardinality[selected]) / ADC_MAX;
+		switch (selected) {
+		case MENU_AMPLITUDE:
+			if(in_stg.amplitude != selection) {
+				in_stg.amplitude = selection;
+				stg_print_settings(lcd, &in_stg);
+			}
+			break;
+		case MENU_OCTAVE:
+			if(in_stg.octave != selection) {
+				in_stg.octave = selection;
+				stg_print_settings(lcd, &in_stg);
+			}
+			break;
+		case MENU_WAVEFORM:
+			if(in_stg.env_shape != selection) {
+				in_stg.env_shape = selection;
+				stg_print_shape(lcd, &in_stg);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	return false;
 }
 
 /************************************************************************/
-/* Private Helpers                                             	         */
+/* Print stuff                                                          */
+/************************************************************************/
+
+struct shape_meta {
+	uint8_t value;
+	const char * figure;
+} env_shapes[] = {
+	{0,                "________________"},
+	{REVERSE_SAWTOOTH, "\x7|\x7|\x7|\x7|\x7|\x7|\x7|\x7|"},
+	{TRIANGULAR_OOP,   "\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7/"},
+	{UP_DOWN_CUP,      "\x7/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"
+										 "\x6\x6\x6\x6"},
+	{SAWTOOTH,         "/|/|/|/|/|/|/|/|"},
+	{DOWN_CUP,         "/\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6\x6"},
+	{TRIANGULAR,       "/\x7/\x7/\x7/\x7/\x7/\x7/\x7/\x7"},
+};
+
+static char print_buf[LCD_BUF_SIZE] = {0};
+
+void stg_print_settings(const lcd1602a_t * lcd, const settings_t * stg) {
+	snprintf(print_buf, LCD_BUF_SIZE, "amp: %d oct: %d", stg->amplitude, stg->octave);
+	lcd1602a_print_row(lcd, print_buf, 0);
+}
+
+
+void stg_print_shape(const lcd1602a_t * lcd, const settings_t * stg) {
+	snprintf(print_buf, LCD_BUF_SIZE, "%s", env_shapes[stg->env_shape].figure);
+	lcd1602a_print_row(lcd, print_buf, 1);
+}
+
+uint8_t stg_get_shape_value(const settings_t * stg) {
+	return env_shapes[stg->env_shape].value;
+}
+
+/************************************************************************/
+/* Private Helpers                                                      */
 /************************************************************************/
 
 static void adc_init(void) {
