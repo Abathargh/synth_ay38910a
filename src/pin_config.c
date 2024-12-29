@@ -123,7 +123,7 @@ uint8_t read_debounced(pin_t p) {
 		ctr = 0;
 		while (ctr++ < DEBOUNCE_RES) {
 			acc = (acc << 1) | (read_pin(p.port, p.pin));
-			delay_ms(1);
+			delay_us(500);
 		}
 	} while(acc != 0x00 && acc != 0xff);
 	return acc;
