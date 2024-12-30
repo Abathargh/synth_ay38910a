@@ -109,7 +109,9 @@ void play_note(key_t * key, uint8_t note, uint8_t * state) {
 			*state &= CHAN_ENABLE(i);
 			ay38910_channel_mode(ay, *state);
 			ay38910_set_amplitude(ay, i << 1, settings->amplitude);
-			ay38910_play_note(ay, i << 1, NOTE(note, settings->octave));
+
+			// B = 0, but when note is 0, this is a C, hence the +1
+			ay38910_play_note(ay, i << 1, NOTE(note+1, settings->octave));
 			key->chan = i;
 			return;
 		}
