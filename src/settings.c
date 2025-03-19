@@ -23,6 +23,12 @@
 #define IS_HEX_HI(n) (n >= 0x41 && n <= 0x46)
 #define IS_HEX_LO(n) (n >= 0x61 && n <= 0x66)
 
+#define ADC_MAX        (255)
+#define AMPLITUDE_CARD (15)
+#define OCTAVE_CARD    (8)
+#define WAVEFORM_CARD  (6)
+#define MENU_ENTRIES   (3)
+
 /************************************************************************/
 /* Private function declarations                                        */
 /************************************************************************/
@@ -30,6 +36,8 @@
 static uint8_t u8_from_hex_char(char c);
 static char hex_char_from_u8(uint8_t u);
 static void adc_init(void);
+static void enable_potentiometer(void);
+static void disable_potentiometer(void);
 
 /************************************************************************/
 /* Private variables                                                    */
@@ -40,9 +48,15 @@ static void adc_init(void);
  * | amplitude | octave   | envelope shape |
  * | frame[0]  | frame[1] | frame[2]       |
  */
-static volatile char    recv_buf[BUF_SIZE] = {0};
-static volatile uint8_t idx                =  0;
-static volatile uint8_t pot_data           =  0;
+static volatile char     recv_buf[BUF_SIZE] = {0};
+static volatile uint8_t  idx                =  0;
+static volatile uint16_t pot_data           =  0;
+
+static uint16_t menu_cardinality[MENU_ENTRIES] = {
+	[MENU_AMPLITUDE] = AMPLITUDE_CARD,
+	[MENU_OCTAVE]    = OCTAVE_CARD,
+	[MENU_WAVEFORM]  = WAVEFORM_CARD,
+};
 
 static const usart_t * serial = &(usart_t) {
 	.baud_hi=&UBRR0H,
@@ -58,8 +72,8 @@ static const usart_t * serial = &(usart_t) {
 /************************************************************************/
 
 void stg_init(settings_ctl_t * sctl) {
-	 as_input_pull_up_pin(sctl->nav_pin.port, sctl->nav_pin.pin);
-	 as_input_pull_up_pin(sctl->sel_pin.port, sctl->sel_pin.pin);
+	as_input_pull_up_pin(sctl->nav_pin.port, sctl->nav_pin.pin);
+	as_input_pull_up_pin(sctl->sel_pin.port, sctl->sel_pin.pin);
 	usart_init(serial, BAUD_VAL(9600));
 	adc_init();
 	sei();
@@ -94,31 +108,8 @@ uint8_t stg_received_data(void) {
 	return idx == BUF_SIZE;
 }
 
-void stg_enable_potentiometer(void)
-{
-	ADCSRA |= (1 << ADEN);
-	ADCSRA |= (1 << ADSC);
-}
-
-void stg_disable_potentiometer(void)
-{
-	ADCSRA &= ~(1 << ADEN);
-}
-
-uint8_t stg_read_potentiometer(void)
-{
-	return pot_data;
-}
-
-#define ADC_MAX (255)
-
-static uint16_t menu_cardinality[] = {
-	[MENU_AMPLITUDE] = AMPLITUDE_CARD,
-	[MENU_OCTAVE]    = OCTAVE_CARD,
-	[MENU_WAVEFORM]  = WAVEFORM_CARD,
-};
-
-bool stg_menu_loop(const lcd1602a_t * lcd, settings_ctl_t * ctl, settings_t * stg) {
+bool stg_menu_loop(const lcd1602a_t * lcd,
+                   const settings_ctl_t * ctl, settings_t * stg) {
 	static enum menu_state selected = MENU_AMPLITUDE;
 	static settings_t      in_stg   = {0};
 	static bool in_menu             = false;
@@ -132,24 +123,24 @@ bool stg_menu_loop(const lcd1602a_t * lcd, settings_ctl_t * ctl, settings_t * st
 		in_menu = false;
 		*stg = in_stg;
 		last_sel_pressed = sel_pressed;
-		stg_disable_potentiometer();
+		disable_potentiometer();
 		return true;
 	}
 	last_sel_pressed = sel_pressed;
 
-
 	if(nav_pressed && !last_nav_pressed) {
 		if(!in_menu) {
 			in_menu = true;
-			stg_enable_potentiometer();
+			enable_potentiometer();
 			in_stg = *stg;
 		}
-		selected = (selected + 1) % 3;
+		selected = (selected + 1) % MENU_ENTRIES;
 	}
 	last_nav_pressed = nav_pressed;
 
 	if(in_menu) {
-		uint8_t selection = ((uint16_t)pot_data * menu_cardinality[selected]) / ADC_MAX;
+		// normalize the acquired data over the custom domain
+		uint8_t selection = (pot_data * menu_cardinality[selected]) / ADC_MAX;
 		switch (selected) {
 		case MENU_AMPLITUDE:
 			if(in_stg.amplitude != selection) {
@@ -223,6 +214,15 @@ static void adc_init(void) {
 
 	ADMUX  |= (POT_CHAN);
 	ADCSRA |= (1 << ADSC);
+}
+
+static void enable_potentiometer(void) {
+	ADCSRA |= (1 << ADEN);
+	ADCSRA |= (1 << ADSC);
+}
+
+static void disable_potentiometer(void) {
+	ADCSRA &= ~(1 << ADEN);
 }
 
 static uint8_t u8_from_hex_char(char c) {
