@@ -154,7 +154,6 @@ typedef struct {
  *
  * Each channel is mapped onto its starting address that must be used
  * when communicating the note to play.
- *
  */
 typedef enum {
 	CHANNEL_A = 0x00, /**< Channel A selected  */
@@ -198,9 +197,9 @@ typedef enum {
 	REVERSE_SAWTOOTH = FUNC_CONTINUE,
 	TRIANGULAR_OOP   = FUNC_CONTINUE | FUNC_ALTERNATE,
 	UP_DOWN_CUP      = FUNC_CONTINUE | FUNC_ALTERNATE | FUNC_HOLD,
-	SAWTOOTH         = FUNC_CONTINUE | FUNC_ATTACK,
-	DOWN_CUP         = FUNC_CONTINUE | FUNC_ATTACK | FUNC_HOLD,
-	TRIANGULAR       = FUNC_CONTINUE | FUNC_ATTACK
+    TRIANGULAR       = FUNC_CONTINUE | FUNC_ALTERNATE | FUNC_ATTACK,
+    DOWN_CUP         = FUNC_CONTINUE | FUNC_ATTACK | FUNC_HOLD,
+    SAWTOOTH         = FUNC_CONTINUE | FUNC_ATTACK,
 } envelope_shape_t;
 
 

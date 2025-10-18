@@ -118,7 +118,7 @@ void ay38910_play_note(const ay38910a_t * ay, channel_t chan, uint8_t note)
 
 void ay38910_play_noise(const ay38910a_t * ay, uint8_t divider)
 {
-	write_to_data_bus(ay, NOISE_REG, 0x1F & divider);
+	write_to_data_bus(ay, NOISE_REG, divider & 0x1f);
 }
 
 void ay38910_channel_mode(const ay38910a_t * ay, uint8_t mode)
